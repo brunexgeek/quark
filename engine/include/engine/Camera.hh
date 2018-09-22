@@ -28,8 +28,10 @@ class Camera
 		const glm::mat4 &getGlobalMatrix() const;
 
 		void rotateTarget(
-			const glm::vec3 &angles,
-			const glm::vec3 &axis );
+			const glm::vec3 &angles );
+
+		void rotateCamera(
+			const glm::vec3 &angles );
 
 		void move(
 			glm::vec3 inc );
@@ -43,6 +45,10 @@ class Camera
 		glm::mat4 globalMatrix_;
 		float fov_;
 		float aspect_;
+
+		static void rotatePoint(
+			glm::vec3 &object,
+			const glm::vec3 &angles );
 
 		void update();
 };

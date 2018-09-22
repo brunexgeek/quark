@@ -1,5 +1,6 @@
 #include <engine/Camera.hh>
 #include <algorithm>
+#include <iostream>
 
 
 Camera::Camera(
@@ -7,10 +8,11 @@ Camera::Camera(
 	const glm::vec3 &target,
 	float fov,
 	float aspect ) : position_(position), target_(target), fov_(fov),
-		aspect_(aspect)
+		aspect_(aspect), angles_(0)
 {
+	target_ = glm::normalize(target_) + position_;
 	// projection matrix with display range of 0.1 unit <-> 100 units
-	projection_ = glm::perspective(fov, aspect, 0.01f, 100.0f);
+	projection_ = glm::perspective(glm::radians(fov), aspect, 0.01f, 100.0f);
 	update();
 }
 
@@ -59,39 +61,46 @@ void Camera::move(
 	glm::vec3 inc )
 {
 	position_ += inc;
+	target_ += inc;
 	update();
 }
 
 
-void Camera::rotateTarget(
-	const glm::vec3 &angles,
-	const glm::vec3 &axis )
+void Camera::rotatePoint(
+	glm::vec3 &object,
+	const glm::vec3 &angles )
 {
-	//glm::vec3 axis = { (float) (angles.x != 0), (float) (angles.y != 0), (float) (angles.z != 0) };
-	if (axis.x < 1 && axis.y < 1 && axis.z < 1) return;
+	if (angles.x == 0 && angles.y == 0 && angles.z == 0) return;
 
-	auto applyAngle = [this](float angle, glm::vec3 axis)
+	auto applyAngle = [](glm::vec3 &object, float angle, const glm::vec3 &axis)
 	{
-		if (angle == 0) return;
-		glm::mat4 rotationMat = glm::rotate(rotationMat, angle, axis);
-		target_ = glm::vec3(rotationMat * glm::vec4(target_, 1.0));
+		glm::mat4 rotationMat;
+		rotationMat = glm::rotate(rotationMat, angle, axis);
+		std::cout << "Angle: " << angle << "    Axis:" << axis.x << ',' << axis.y << ',' << axis.z << std::endl;
+		std::cout << "From: " << object.x << ',' << object.y << ',' << object.z << std::endl;
+		object = glm::vec3(rotationMat * glm::vec4(object, 1.0));
+		std::cout << "  To: " << object.x << ',' << object.y << ',' << object.z << std::endl << std::endl;
 	};
 
-	glm::mat4 rotationMat;
-	float angle = std::max(angles.x, angles.y);
+	if (angles.x != 0) applyAngle(object, angles.x, glm::vec3(1, 0, 0));
+	if (angles.y != 0) applyAngle(object, angles.y, glm::vec3(0, 1, 0));
+	if (angles.z != 0) applyAngle(object, angles.z, glm::vec3(0, 0, 1));
+}
 
-	if (angle != std::max(angle, angles.z))
-	{
-		// different angles
-		if (axis.x > 0) applyAngle(angles.x, glm::vec3(1, 0, 0));
-		if (axis.y > 0) applyAngle(angles.y, glm::vec3(0, 1, 0));
-		if (axis.z > 0) applyAngle(angles.z, glm::vec3(0, 0, 1));
-	}
-	else
-	{
-		// unique angle
-		applyAngle(angle, axis);
-	}
 
+void Camera::rotateTarget(
+	const glm::vec3 &angles )
+{
+	target_ -= position_;
+	rotatePoint(target_, angles);
+	target_ += position_;
+	update();
+}
+
+
+void Camera::rotateCamera(
+	const glm::vec3 &angles )
+{
+	rotatePoint(position_, angles);
 	update();
 }

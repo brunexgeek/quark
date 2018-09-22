@@ -17,6 +17,8 @@
 #include <engine/Input.hh>
 #include <SDL2/SDL.h>
 #include <cstring>
+#include <iostream>
+
 
 Input::Input() :
 	m_mouseX(0),
@@ -29,21 +31,38 @@ Input::Input() :
 	memset(m_mouseInput, 0, NUM_MOUSEBUTTONS * sizeof(bool));
 	memset(m_downMouse, 0, NUM_MOUSEBUTTONS * sizeof(bool));
 	memset(m_upMouse, 0, NUM_MOUSEBUTTONS * sizeof(bool));
+
 	SDL_ShowCursor(SDL_ENABLE);
 }
+
+
+Input::~Input()
+{
+	SDL_ShowCursor(SDL_ENABLE);
+	SDL_CaptureMouse(SDL_TRUE);
+}
+
 
 void Input::grabCursor(bool enabled)
 {
 	if(enabled)
-		SDL_ShowCursor(SDL_DISABLE);
+	{
+		//SDL_ShowCursor(SDL_DISABLE);
+		//if (SDL_CaptureMouse(SDL_TRUE) < 0) std::cout << "Mouse grab unsupported!\n";
+		SDL_SetRelativeMouseMode(SDL_TRUE);
+	}
 	else
-		SDL_ShowCursor(SDL_ENABLE);
+	{
+		//SDL_ShowCursor(SDL_ENABLE);
+		//SDL_CaptureMouse(SDL_FALSE);
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+	}
 }
 
 
 bool Input::isCursorGrabbed() const
 {
-	return SDL_ShowCursor(SDL_QUERY) != 0;
+	return SDL_GetRelativeMouseMode() != 0;
 }
 
 void Input::setMousePosition(const glm::vec2& pos) const
@@ -72,6 +91,7 @@ void Input::update()
     memset(m_mouseInput, 0, sizeof(m_mouseInput));
     memset(m_downMouse, 0, sizeof(m_downMouse));
     memset(m_upMouse, 0, sizeof(m_upMouse));
+	mouseDelta.x = mouseDelta.y = 0;
 
 	SDL_Event e;
 	while(SDL_PollEvent(&e))
@@ -83,8 +103,8 @@ void Input::update()
 
 		if(e.type == SDL_MOUSEMOTION)
 		{
-			setMouseX(e.motion.x);
-			setMouseY(e.motion.y);
+			setMouseX(e.motion.x, e.motion.xrel);
+			setMouseY(e.motion.y, e.motion.yrel);
 		}
 
 		if(e.type == SDL_KEYDOWN)

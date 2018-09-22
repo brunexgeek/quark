@@ -390,13 +390,17 @@ public:
 
 	Input();
 
+	~Input();
+
 	inline bool getKey(int keyCode)            const { return m_inputs[keyCode]; }
-	inline bool isKeyDown(int keyCode)        const { return m_downKeys[keyCode]; }
-	inline bool isKeyUp(int keyCode)          const { return m_upKeys[keyCode]; }
+	inline bool isKeyDown(int keyCode)        const  { return m_downKeys[keyCode]; }
+	inline bool isKeyUp(int keyCode)          const  { return m_upKeys[keyCode]; }
 	inline bool getMouse(int keyCode)          const { return m_mouseInput[keyCode]; }
-	inline bool isMouseDown(int keyCode)      const { return m_downMouse[keyCode]; }
-	inline bool isMouseUp(int keyCode)        const { return m_upMouse[keyCode]; }
-	inline glm::vec2 GetMousePosition()         const { return glm::vec2((float)m_mouseX, (float)m_mouseY); }
+	inline bool isMouseDown(int keyCode)      const  { return m_downMouse[keyCode]; }
+	inline bool isMouseUp(int keyCode)        const  { return m_upMouse[keyCode]; }
+	inline glm::vec2 GetMousePosition()        const { return glm::vec2((float)m_mouseX, (float)m_mouseY); }
+	inline glm::vec2 getMouseDelta()           const { return mouseDelta; }
+	inline bool isMouseMoved()                 const { return mouseDelta.x != 0 || mouseDelta.y != 0; }
 
 	void grabCursor(bool value);
 	bool isCursorGrabbed() const;
@@ -408,8 +412,8 @@ public:
 	inline void setMouse(int keyCode, bool value)     { m_mouseInput[keyCode] = value; }
 	inline void setMouseDown(int keyCode, bool value) { m_downMouse[keyCode] = value; }
 	inline void setMouseUp(int keyCode, bool value)   { m_upMouse[keyCode] = value; }
-	inline void setMouseX(int value)                  { m_mouseX = value; }
-	inline void setMouseY(int value)                  { m_mouseY = value; }
+	inline void setMouseX(int value, int rel = 0)     { m_mouseX = value; mouseDelta.x = rel; }
+	inline void setMouseY(int value, int rel = 0)     { m_mouseY = value; mouseDelta.y = rel; }
 
     void update();
 protected:
@@ -422,6 +426,7 @@ private:
 	bool m_upMouse[NUM_MOUSEBUTTONS];
 	int  m_mouseX;
 	int  m_mouseY;
+	glm::vec2 mouseDelta;
 };
 
 #endif
