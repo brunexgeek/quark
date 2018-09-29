@@ -47,6 +47,7 @@ class Game : public Application
 
             object = new Object(*mesh);
             object->getTransform().rotate({90, 0, 0});
+            object->getTransform().scale({0, 0, 2});
             object->getTransform().update();
         }
 
@@ -112,7 +113,7 @@ class Game : public Application
             if (input.isMouseMoved())
             {
                 static const float AMOUNT = 1.5F;
-                Vector2f delta = input.getMouseDelta();
+                Vector2i delta = input.getMouseDelta();
                 Vector3f displace(0);
                 if (delta.x < 0) displace.y = AMOUNT;
                 if (delta.x > 0) displace.y = -AMOUNT;
@@ -140,7 +141,7 @@ int main( int argc, char **argv )
     Level *level = Level::load("maps/sample.png");
     if (level == nullptr) return 1;
 
-    Camera camera(Vector3f(0, 0, -10), Vector3f(0, 0, 0), 60.0F, Camera::AR_16x9);
+    Camera camera(Vector3f(0, 0, -10), Vector3f(0, 0, 0), 50.0F, Camera::AR_16x9);
     Light light(Vector3f(0, 0, 10));
     Renderer renderer(camera, light, 1280, 720);
 

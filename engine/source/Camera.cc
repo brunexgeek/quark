@@ -11,8 +11,8 @@ Camera::Camera(
 		aspect_(aspect), angles_(0)
 {
 	//target_ = glm::normalize(target_) + position_;
-	// projection matrix with display range of 0.1 unit <-> 100 units
-	projection_ = glm::perspective(glm::radians(fov), aspect, 0.01f, 100.0f);
+	// projection matrix with display range of 0.1 unit <-> 1000 units
+	projection_ = glm::perspective(glm::radians(fov), aspect, 0.01f, 1000.0f);
 	update();
 }
 

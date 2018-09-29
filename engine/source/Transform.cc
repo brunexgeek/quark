@@ -2,12 +2,14 @@
 #include <iostream>
 
 
-#define IS_VALID_ANGLE(x)  (!std::isnan(x) && !std::isinf(x) && (x) != 0)
+#define IS_VALID_ANGLE(x)  (!std::isnan(x) && (x) > 0 && (x) < 360)
+#define IS_VALID_SCALE(x)  (!std::isnan(x) && (x) != 1 && (x) > 0 && !std::isinf(x))
 
 
 Transform::Transform()
 {
     matrix_ = Matrix4f::identity();
+    scales_ = { 1.0F, 1.0F, 1.0F };
 }
 
 
@@ -30,11 +32,6 @@ void Transform::update()
     #define CSIN(x)  ((float) std::sin( DEGREE_TO_RAD(x) ))
 
     matrix_ = Matrix4f::identity();
-
-    // translation
-    matrix_[{0,3}] = position_.x;
-    matrix_[{1,3}] = position_.y;
-    matrix_[{2,3}] = position_.z;
 
     // rotation in X axis
     if (IS_VALID_ANGLE(angles_.x))
@@ -67,6 +64,22 @@ void Transform::update()
                           0,                0, 0, 1 });
         matrix_ *= rot;
     }
+
+    // scale
+    if (scales_.x != 1 || scales_.y != 1 || scales_.z != 1)
+    {
+        Matrix4f rot({
+            scales_.x,         0,         0, 0,
+                    0, scales_.y,         0, 0,
+                    0,         0, scales_.z, 0,
+                    0,         0,         0, 1 });
+        matrix_ *= rot;
+    }
+
+    // translation
+    matrix_[{0,3}] = position_.x;
+    matrix_[{1,3}] = position_.y;
+    matrix_[{2,3}] = position_.z;
 
     changed_ = false;
 
@@ -110,3 +123,15 @@ void Transform::rotate( const Vector3f &angles )
     rotate(angles.x, angles.y, angles.z);
 }
 
+void Transform::scale( float x, float y, float z )
+{
+    if (IS_VALID_SCALE(x)) scales_.x = x;
+    if (IS_VALID_SCALE(y)) scales_.y = y;
+    if (IS_VALID_SCALE(z)) scales_.z = z;
+    changed_ = true;
+}
+
+void Transform::scale( const Vector3f &scales )
+{
+    scale(scales.x, scales.y, scales.z);
+}

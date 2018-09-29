@@ -377,30 +377,29 @@ class Input
 
 		~Input();
 
-		inline bool isKeyDown(int keyCode)        const  { return keyboard[keyCode] != 0; }
-		inline bool isKeyUp(int keyCode)          const  { return keyboard[keyCode] == 0; }
-		inline bool isMouseDown(int keyCode)      const  { return mouseButton[keyCode] != 0; }
-		inline bool isMouseUp(int keyCode)        const  { return mouseButton[keyCode] == 0; }
-		inline Vector2f GetMousePosition()        const { return Vector2f((float)m_mouseX, (float)m_mouseY); }
-		inline Vector2f getMouseDelta()           const { return mouseDelta; }
-		inline bool isMouseMoved()                 const { return mouseDelta.x != 0 || mouseDelta.y != 0; }
+		constexpr bool isKeyDown(int keyCode) const         { return keyboard[keyCode] != 0; }
+		constexpr bool isKeyUp(int keyCode) const           { return keyboard[keyCode] == 0; }
+		constexpr bool isMouseDown(int keyCode) const       { return mouseButton[keyCode] != 0; }
+		constexpr bool isMouseUp(int keyCode) const         { return mouseButton[keyCode] == 0; }
+		constexpr const Vector2i& getMousePosition() const  { return mousePosition; }
+		constexpr const Vector2i& getMouseDelta() const     { return mouseDelta; }
+		constexpr bool isMouseMoved() const                 { return mouseDelta.x != 0 || mouseDelta.y != 0; }
 
 		void grabCursor(bool value);
 		bool isCursorGrabbed() const;
-		void setMousePosition(const Vector2f& pos) const;
 
-		inline void setKey(int keyCode, bool value)       { keyboard[keyCode] = (uint8_t) value; }
-		inline void setMouseButton(int button, bool value)     { mouseButton[button] = (uint8_t) value; }
-		inline void setMouseX(int value, int rel = 0)     { m_mouseX = value; mouseDelta.x = rel; }
-		inline void setMouseY(int value, int rel = 0)     { m_mouseY = value; mouseDelta.y = rel; }
+		void setMousePosition(const Vector2f& pos) const;
+		inline void setKey(int keyCode, bool value)        { keyboard[keyCode] = (uint8_t) value; }
+		inline void setMouseButton(int button, bool value) { mouseButton[button] = (uint8_t) value; }
+		inline void setMouseX(int value, int rel = 0)      { mousePosition.x = value; mouseDelta.x = rel; }
+		inline void setMouseY(int value, int rel = 0)      { mousePosition.x = value; mouseDelta.y = rel; }
 
 		void update();
 	private:
 		uint8_t keyboard[NUM_KEYS];
 		bool mouseButton[NUM_MOUSEBUTTONS];
-		int  m_mouseX;
-		int  m_mouseY;
-		Vector2f mouseDelta;
+		Vector2i mousePosition;
+		Vector2i mouseDelta;
 };
 
 

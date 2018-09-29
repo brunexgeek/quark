@@ -20,16 +20,14 @@
 #include <iostream>
 
 
-Input::Input() :
-	m_mouseX(0),
-	m_mouseY(0)
+Input::Input()
 {
 	//memset(m_inputs, 0, NUM_KEYS * sizeof(bool));
 	//memset(m_downKeys, 0, NUM_KEYS * sizeof(bool));
 	//memset(m_upKeys, 0, NUM_KEYS * sizeof(bool));
 	memset(keyboard, 0, NUM_KEYS * sizeof(uint8_t));
 	memset(mouseButton, 0, NUM_MOUSEBUTTONS * sizeof(bool));
-	m_mouseX = m_mouseY = 0;
+	mousePosition.x = mousePosition.y = 0;
 	mouseDelta.x = mouseDelta.y = 0;
 
 	SDL_ShowCursor(SDL_ENABLE);

@@ -64,5 +64,6 @@ struct Vector2
 
 
 typedef Vector2<float> Vector2f;
+typedef Vector2<int> Vector2i;
 
 #endif // ENGINE_VECTOR2_HH
