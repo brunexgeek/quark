@@ -3,69 +3,98 @@
 #include <engine/Renderer.hh>
 #include <engine/Mesh.hh>
 #include <engine/Shader.hh>
+#include <engine/Vector2.hh>
+#include <engine/Vector3.hh>
+#include <engine/Matrix4.hh>
+#include <engine/Quaternion.hh>
+#include <engine/Object.hh>
+
+#include "Level.hh"
 #include <fstream>
 
 
-static const Vertex verts[]  = { {0, 0, 0}, {5, 0, 0}, {0, 5, 0} };
-static const Vector3 colors[] = { {1, 1, 1}, {1, 0, 1}, {0, 1, 1} };
-static const Vector3 normals[]  = { {1, 1, 1}, {1, 1, 1}, {1, 1, 1} };
+static const Vector3f verts[]  = { {0, 0, 0}, {5, 0, 0}, {0, 5, 0} };
+static const Vector3f colors[] = { {1, 1, 1}, {1, 0, 1}, {0, 1, 1} };
+static const Vector3f normals[]  = { {1, 1, 1}, {1, 1, 1}, {1, 1, 1} };
+
+
+std::ostream &operator<<( std::ostream &out, const Vector3f &object )
+{
+    out << "[x: " << object.x << ", y: " << object.y << ", z: " << object.z << "]";
+    return out;
+}
 
 
 class Game : public Application
 {
     public:
-        Mesh *mesh, *julietteMesh;
+        Mesh *mesh;
+        Light &light;
+        Object *object;
 
-        Game( Renderer &renderer) : Application(renderer)
+        Game( Renderer &renderer, Light &light) : Application(renderer), light(light)
         {
-            mesh = new Mesh(&verts[0], &colors[0], &normals[0], 3);
+            /*mesh = new Mesh(&verts[0], &colors[0], &normals[0], 3);*/
             getInput().grabCursor(true);
 
-            std::ifstream julietteBin("juliette.blend.bin");
+            /*std::ifstream julietteBin("juliette.blend.bin");
 	        julietteMesh = new Mesh(julietteBin);
-	        julietteBin.close();
+	        julietteBin.close();*/
+            std::ifstream input("elexis.obj");
+	        mesh = new Mesh(input);
+	        input.close();
+
+            object = new Object(*mesh);
+            object->getTransform().rotate({90, 0, 0});
+            object->getTransform().update();
         }
 
-        ~Game() {}
+        ~Game()
+        {
+            delete object;
+            delete mesh;
+        }
 
         void input(
             Input &input )
         {
-            if (input.isKeyDown(Input::KEY_Q))
+            if (input.isKeyDown(Input::KEY_ESCAPE))
             {
                 stop();
                 return;
             }
-            else
-            if (input.isKeyDown(Input::KEY_W))
+
+            if (input.isKeyDown(Input::KEY_S) || input.isKeyDown(Input::KEY_W))
             {
                 Camera &camera = getRenderer().getCamera();
-                camera.move(glm::vec3(1, 0, 0));
+                Vector3f dir = (camera.getTarget() - camera.getPosition());
+                dir.normalize() / .3F;
+                if (input.isKeyDown(Input::KEY_S)) dir = -dir;
+                std::cout << "Step of " << dir << std::endl;
+                camera.translate(dir);
+                std::cout << "Player: " << camera.getPosition().x << " x " << camera.getPosition().z << std::endl;
+                light.setPosition(camera.getPosition());
             }
-            else
-            if (input.isKeyDown(Input::KEY_S))
+            if (input.isKeyDown(Input::KEY_Q))
             {
                 Camera &camera = getRenderer().getCamera();
-                camera.move(glm::vec3(-1, 0, 0));
+                Vector3f dir = Vector3f(0, .1, 0);
+                camera.translate(dir);
+                light.setPosition(camera.getPosition());
             }
-            else
-            if (input.isKeyDown(Input::KEY_A))
+            if (input.isKeyDown(Input::KEY_Z))
             {
                 Camera &camera = getRenderer().getCamera();
-                camera.move(glm::vec3(0, 0, 1));
-            }
-            else
-            if (input.isKeyDown(Input::KEY_D))
-            {
-                Camera &camera = getRenderer().getCamera();
-                camera.move(glm::vec3(0, 0, -1));
+                Vector3f dir = Vector3f(0, -.1, 0);
+                camera.translate(dir);
+                light.setPosition(camera.getPosition());
             }
 
             if (input.isMouseMoved())
             {
-                static const float AMOUNT = .05F;
-                glm::vec2 delta = input.getMouseDelta();
-                glm::vec3 displace(0);
+                static const float AMOUNT = 1.5F;
+                Vector2f delta = input.getMouseDelta();
+                Vector3f displace(0);
                 if (delta.x < 0) displace.y = AMOUNT;
                 if (delta.x > 0) displace.y = -AMOUNT;
                 Camera &camera = getRenderer().getCamera();
@@ -74,22 +103,26 @@ class Game : public Application
             }
         }
 
-        void update() {}
+        void update()
+        {
+        }
 
         void draw()
         {
-            Vertex bla(0, 0, 0);
-            getRenderer().draw(*julietteMesh, bla);
+            //getRenderer().draw(object->getMesh(), object->getTransform());
+            object->draw(getRenderer());
         }
 
 };
 
 
-
 int main( int argc, char **argv )
 {
-    Camera camera(glm::vec3(3, 3, 3), glm::vec3(50, 3, 50), 60.0F, Camera::AR_16x9);
-    Light light(glm::vec3(5, 3, 5));
+    Level *level = Level::load("maps/sample.png");
+    if (level == nullptr) return 1;
+
+    Camera camera(Vector3f(0, 0, -10), Vector3f(0, 0, 0), 60.0F, Camera::AR_16x9);
+    Light light(Vector3f(0, 0, 10));
     Renderer renderer(camera, light, 1280, 720);
 
     std::ifstream sf("./shaders/colored-vertex.glsl");
@@ -103,7 +136,7 @@ int main( int argc, char **argv )
     ShaderProgram program(vertex, frags);
 
     renderer.setActiveShader(program);
-    Game instance(renderer);
+    Game instance(renderer, light);
     instance.run();
     return 0;
 }

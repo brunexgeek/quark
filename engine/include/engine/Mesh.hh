@@ -4,12 +4,13 @@
 
 #include <stdint.h>
 #include <iostream>
-#include <glm/glm.hpp>
+#include <engine/Vector3.hh>
+#include <engine/Vector2.hh>
 
 
 #pragma pack(push, 4)
 
-struct Vertex
+/*struct Vertex
 {
 	float x;
 	float y;
@@ -36,17 +37,17 @@ struct Vertex
 		z = vector.z;
 		return *this;
 	}
-};
+};*/
 
 
-typedef Vertex Vector3;
+//typedef Vertex Vector3;
 
 
 std::ostream &operator << (
 	std::ostream &out,
-	const Vertex &vertex );
+	const Vector3f &vertex );
 
-
+/*
 struct Vector2
 {
 	float u;
@@ -59,7 +60,7 @@ struct Vector2
 		v = vector.y;
 		return *this;
 	}
-};
+};*/
 
 #pragma pack(pop)
 
@@ -72,9 +73,9 @@ class Mesh
 			bool isDynamic = false );
 
 		Mesh(
-			const Vertex *vetices,
-			const Vector3 *colors,
-			const Vector3 *normals,
+			const Vector3f *vetices,
+			const Vector3f *colors,
+			const Vector3f *normals,
 			uint32_t count,
 			bool isDynamic = false );
 
@@ -89,17 +90,17 @@ class Mesh
 		uint32_t getVertexCount() const;
 
 		void setVertex(
-			const Vertex *vertex,
+			const Vector3f *vertex,
 			uint32_t begin,
 			uint32_t size );
 
 		void setNormal(
-			const Vertex *normal,
+			const Vector3f *normal,
 			uint32_t begin,
 			uint32_t size );
 
 		void setColor(
-			const Vector3 *color,
+			const Vector3f *color,
 			uint32_t begin,
 			uint32_t size );
 
@@ -111,14 +112,14 @@ class Mesh
 		bool isDynamic;
 
 		void initialize(
-			const Vertex *vertex,
-			const Vector3 *color,
-			const Vector3 *normal,
+			const Vector3f *vertex,
+			const Vector3f *color,
+			const Vector3f *normal,
 			uint32_t count,
 			bool isDynamic );
 
-		Vertex *computeNormal(
-			const Vertex *vetices,
+		Vector3f *computeNormal(
+			const Vector3f *vetices,
 			uint32_t count ) const;
 
 		/**
@@ -135,16 +136,16 @@ class Mesh
 
 		void loadObject(
 			std::istream &in,
-			Vertex *&vertices,
-			Vector3 *&colors,
-			Vertex *&normals,
+			Vector3f *&vertices,
+			Vector3f *&colors,
+			Vector3f *&normals,
 			uint32_t &count );
 
 		void loadBin(
 			std::istream &in,
-			Vertex *&vertices,
-			Vector3 *&colors,
-			Vertex *&normals,
+			Vector3f *&vertices,
+			Vector3f *&colors,
+			Vector3f *&normals,
 			uint32_t &count );
 };
 

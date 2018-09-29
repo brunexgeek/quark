@@ -53,11 +53,12 @@ Renderer::Renderer(
 	// accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 	// set the clear color and blank the screen
-	glClearColor(0, 0, 1, 1);
+	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// enables face culling
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
 
 	glEnable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -115,7 +116,7 @@ uint32_t Renderer::getHeight() const
 void Renderer::draw(
 	const Mesh &mesh,
 	//const Material &material,
-	const Vertex &position )
+	const Transform &transform )
 {
 	uint32_t vertexId = mesh.getVertexId();
 	uint32_t normalId = mesh.getNormalId();
@@ -162,13 +163,18 @@ void Renderer::draw(
 	//glBindTexture(GL_TEXTURE_2D, texture.getTexture());
 	glUniform1i(textureId, 0);
 	// creates the model matrix
-	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	/*glm::mat4 modelMatrix = glm::mat4(1.0f);
 	modelMatrix[3][0] = position.x;
 	modelMatrix[3][1] = position.y;
 	modelMatrix[3][2] = position.z;
-	glUniformMatrix4fv(mId, 1, GL_FALSE, &modelMatrix[0][0]);
+	#define __90DEGREES ( 90 * 3.1415 ) / 180
+	modelMatrix[1][1] = std::cos(__90DEGREES);
+	modelMatrix[1][2] = -std::sin(__90DEGREES);
+	modelMatrix[2][1] = std::sin(__90DEGREES);
+	modelMatrix[2][2] = std::cos(__90DEGREES);*/
+	glUniformMatrix4fv(mId, 1, GL_FALSE, (const GLfloat*) transform.getMatrix().data);
 
-	// Draw the triangle !
+	// draw the triangles
 	glDrawArrays(GL_TRIANGLES, 0, mesh.getVertexCount());
 
 	glDisableVertexAttribArray(0);
@@ -280,7 +286,8 @@ void Renderer::prepare()
 	//updateCamera();
 
 	//glUseProgram(shaderId);
-	const glm::vec3 &lightPosition = light.getPosition();
+	const Vector3f &lightPosition = light.getPosition();
+	//std::cout << "Light " << &light << " is [x: " << lightPosition.x << ", y: " << lightPosition.y << ", z: " << lightPosition.z << "]" << std::endl;;
 	glUniform3f(lightId, lightPosition.x, lightPosition.y, lightPosition.z);
 
 	// Send our transformation to the currently bound shader,

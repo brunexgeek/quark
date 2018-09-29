@@ -45,19 +45,19 @@ void Object::update()
 
 
 void Object::setPosition(
-	const Vertex &value )
+	const Vector3f &value )
 {
 	position = value;
 }
 
 
-const Vertex &Object::getPosition() const
+const Vector3f &Object::getPosition() const
 {
 	return position;
 }
 
 
-const Vertex &Object::getDimension() const
+const Vector3f &Object::getDimension() const
 {
 	return dimension;
 }
@@ -66,5 +66,17 @@ const Vertex &Object::getDimension() const
 void Object::draw(
 	Renderer &renderer )
 {
-	renderer.draw(mesh, position);
+	renderer.draw(mesh, transform);
+}
+
+
+Transform& Object::getTransform()
+{
+	return transform;
+}
+
+
+const Transform& Object::getTransform() const
+{
+	return transform;
 }

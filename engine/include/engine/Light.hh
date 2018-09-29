@@ -9,7 +9,7 @@ class Light
 {
 	public:
 		Light(
-			const glm::vec3 &position ) : position(position)
+			const Vector3f &position ) : position(position)
 		{
 
 		}
@@ -18,9 +18,15 @@ class Light
 		{
 		}
 
-		const glm::vec3 &getPosition() const
+		const Vector3f &getPosition() const
 		{
 			return position;
+		}
+
+		void setPosition( const Vector3f &pos )
+		{
+			position = pos;
+			std::cout << "Light " << this << " moved to [x: " << position.x << ", y: " << position.y << ", z: " << position.z << "]\n";
 		}
 
 		void rotateZ(
@@ -28,11 +34,14 @@ class Light
 		{
 			glm::mat4 rotationMat;
 			rotationMat = glm::rotate(rotationMat, degree, glm::vec3(0.0, 1.0, 0.0));
-			position = glm::vec3(rotationMat * glm::vec4(position, 1.0));
+			glm::vec3 temp = glm::vec3(rotationMat * glm::vec4(position.x, position.y, position.z, 1.0));
+			position.x = temp.x;
+			position.y = temp.y;
+			position.z = temp.z;
 		}
 
 	protected:
-		glm::vec3 position;
+		Vector3f position;
 };
 
 

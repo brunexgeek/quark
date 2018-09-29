@@ -13,10 +13,11 @@
 #include <vector>
 #include <stdint.h>
 #include <iostream>
-#include <glm/glm.hpp>
+//#include <glm/glm.hpp>
 
 #include <engine/Mesh.hh>
 #include <engine/Light.hh>
+#include <engine/Transform.hh>
 
 
 class Sprite;
@@ -63,11 +64,11 @@ class Renderer
 		void draw(
 			const Mesh &mesh,
 			const Material &material,
-			const Vertex &position );
+			const Vector3f &position );
 
 		void draw(
 			const Mesh &mesh,
-			const Vertex &position );
+			const Transform &transform );
 
 		static uint32_t loadShaders(
 			const std::string &vertex_file_path,

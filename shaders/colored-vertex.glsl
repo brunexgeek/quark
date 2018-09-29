@@ -45,6 +45,7 @@ void main()
 	Normal_cameraspace = ( V * M * vec4(vertexNormal_modelspace,0)).xyz; // Only correct if ModelMatrix does not scale the model ! Use its inverse transpose if not.
 
 	// UV of the vertex. No special space for this one.
-	Color = vertexColor;
+	//Color = vertexColor;
+	Color = vec3( clamp(gl_Position, 0, 1) );
 }
 

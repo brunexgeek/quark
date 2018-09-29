@@ -1,8 +1,7 @@
 #include <engine/Mesh.hh>
 #include <engine/Exception.hh>
 #include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <engine/Vector3.hh>
 #include <iostream>
 #include <cstdlib>
 #include <vector>
@@ -15,9 +14,9 @@ using std::istream;
 
 
 Mesh::Mesh(
-	const Vertex *vertex,
-	const Vector3 *color,
-	const Vector3 *normal,
+	const Vector3f *vertex,
+	const Vector3f *color,
+	const Vector3f *normal,
 	uint32_t count,
 	bool isDynamic ) : count(count), isDynamic(isDynamic)
 {
@@ -33,9 +32,9 @@ Mesh::~Mesh()
 
 
 void Mesh::initialize(
-	const Vertex *vertex,
-	const Vector3 *color,
-	const Vector3 *normal,
+	const Vector3f *vertex,
+	const Vector3f *color,
+	const Vector3f *normal,
 	uint32_t count,
 	bool isDynamic )
 {
@@ -44,23 +43,23 @@ void Mesh::initialize(
 
 	glGenBuffers(1, &vertexId);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * count, vertex,
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3f) * count, vertex,
 		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
 	glGenBuffers(1, &colorId);
 	glBindBuffer(GL_ARRAY_BUFFER, colorId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * count, color,
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3f) * count, color,
 		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
 	glGenBuffers(1, &normalId);
 	glBindBuffer(GL_ARRAY_BUFFER, normalId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * count, normal,
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3f) * count, normal,
 		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 }
 
 
-Vertex *Mesh::computeNormal(
-	const Vertex *vetices,
+Vector3f *Mesh::computeNormal(
+	const Vector3f *vetices,
 	uint32_t count ) const
 {
 	// TODO: implement this!
@@ -93,29 +92,29 @@ uint32_t Mesh::getVertexCount() const
 
 
 void Mesh::setVertex(
-	const Vertex *vertex,
+	const Vector3f *Vector3f,
 	uint32_t begin,
 	uint32_t size )
 {
-	setData(vertexId, (uint8_t*) vertex, begin, size, sizeof(Vertex));
+	setData(vertexId, (uint8_t*) Vector3f, begin, size, sizeof(Vector3f));
 }
 
 
 void Mesh::setNormal(
-	const Vertex *normal,
+	const Vector3f *normal,
 	uint32_t begin,
 	uint32_t size )
 {
-	setData(normalId, (uint8_t*) normal, begin, size, sizeof(Vertex));
+	setData(normalId, (uint8_t*) normal, begin, size, sizeof(Vector3f));
 }
 
 
 void Mesh::setColor(
-	const Vector3 *color,
+	const Vector3f *color,
 	uint32_t begin,
 	uint32_t size )
 {
-	setData(colorId, (uint8_t*) color, begin, size, sizeof(Vector3));
+	setData(colorId, (uint8_t*) color, begin, size, sizeof(Vector3f));
 }
 
 
@@ -127,7 +126,7 @@ void Mesh::setData(
 	uint32_t size )
 {
 	glBindBuffer(GL_ARRAY_BUFFER, id);
-std::cout << "Copy " << this->count << "x" << size << std::endl;
+//std::cout << "Copy " << this->count << "x" << size << std::endl;
 	if (start == 0 && count == 0)
 		glBufferData(GL_ARRAY_BUFFER, this->count * size, data,
 			(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
@@ -174,21 +173,22 @@ Mesh::Mesh(
 	std::istream &in,
 	bool isDynamic )
 {
-	Vertex *vertex;
-	Vector3 *color;
-	Vector3 *normal;
+	Vector3f *vertex;
+	Vector3f *color;
+	Vector3f *normal;
 	uint32_t count;
 
-	loadBin(in, vertex, color, normal, count);
+	//loadBin(in, Vector3f, color, normal, count);
+	loadObject(in, vertex, color, normal, count);
 	initialize(vertex, color, normal, count, isDynamic);
 }
 
 
 void Mesh::loadBin(
 	istream &in,
-	Vertex *&vertices,
-	Vector3 *&colors,
-	Vector3 *&normals,
+	Vector3f *&vertices,
+	Vector3f *&colors,
+	Vector3f *&normals,
 	uint32_t &count )
 {
 	if (in.good() == false)
@@ -196,8 +196,8 @@ void Mesh::loadBin(
 
 	char line[128];
 	std::vector<uint32_t> vertexIndices, normalIndices;
-	Vector3 *temp_vertices;
-	Vector3 *temp_normals;
+	Vector3f *temp_vertices;
+	Vector3f *temp_normals;
 	vector<string> content;
 
 	in.seekg(0x24, in.beg);
@@ -207,15 +207,15 @@ void Mesh::loadBin(
 	in.read( (char*) &total, sizeof(uint32_t) );
 	if (in.good() == false || total > 0x7FFFF)
 		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
-	temp_vertices = new Vector3[total]();
-	in.read( (char*) temp_vertices, total * sizeof(Vector3) );
+	temp_vertices = new Vector3f[total]();
+	in.read( (char*) temp_vertices, total * sizeof(Vector3f) );
 
 	// reads the normals
 	in.read( (char*) &total, sizeof(uint32_t) );
 	if (in.good() == false || total > 0x7FFFF)
 		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
-	temp_normals = new Vector3[total]();
-	in.read( (char*) temp_normals, total * sizeof(Vector3) );
+	temp_normals = new Vector3f[total]();
+	in.read( (char*) temp_normals, total * sizeof(Vector3f) );
 
 	uint32_t groups;
 	in.read( (char*) &groups, sizeof(uint32_t) );
@@ -249,11 +249,11 @@ void Mesh::loadBin(
 	//	throw 1;
 
 	count = vertexIndices.size();
-	vertices = new Vertex[count];
-	colors   = new Vector3[count];
-	normals  = new Vector3[count];
+	vertices = new Vector3f[count];
+	colors   = new Vector3f[count];
+	normals  = new Vector3f[count];
 
-	// for each vertex of each triangle
+	// for each Vector3f of each triangle
 	for (uint32_t i = 0; i < vertexIndices.size(); i++)
 	{
 		// Get the indices of its attributes
@@ -262,9 +262,9 @@ void Mesh::loadBin(
 		unsigned int normalIndex = normalIndices[i];
 
 		// Get the attributes thanks to the index
-		Vector3 &vertex = temp_vertices[ vertexIndex ];
+		Vector3f &vertex = temp_vertices[ vertexIndex ];
 		//glm::vec2 uv = temp_uvs[ uvIndex-1 ];
-		Vector3 &normal = temp_normals[ normalIndex ];
+		Vector3f &normal = temp_normals[ normalIndex ];
 
 		vertices[i] = vertex;
 		//colors[i].fromGLM(uv);
@@ -281,40 +281,41 @@ void Mesh::loadBin(
 
 void Mesh::loadObject(
 	istream &in,
-	Vertex *&vertices,
-	Vector3 *&colors,
-	Vector3 *&normals,
+	Vector3f *&vertices,
+	Vector3f *&colors,
+	Vector3f *&normals,
 	uint32_t &count )
 {
 	if (in.good() == false)
 		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from Wavefront input");
 
-	char line[128];
+static bool first = false;
+
+	std::string line;
 	std::vector<uint32_t> vertexIndices, uvIndices, normalIndices;
-	std::vector<glm::vec3> temp_vertices;
+	std::vector<Vector3f> temp_vertices;
 	//std::vector<glm::vec2> temp_uvs;
-	std::vector<glm::vec3> temp_normals;
+	std::vector<Vector3f> temp_normals;
 	vector<string> content;
 
 	while (in.good())
 	{
-		line[0] = 0;
-		in.getline(line, sizeof(line) - 1);
+		getline(in, line);
 
 		// parses the line content
 		content.clear();
-		splitText(line, content);
+		splitText(line.c_str(), content);
 
 		if (content.size() == 0) continue;
 
 		// handles vertices
 		if (content[0] == "v" && content.size() == 4)
 		{
-			glm::vec3 vertex;
-			vertex.x = atof(content[1].c_str());
-			vertex.y = atof(content[2].c_str());
-			vertex.z = atof(content[3].c_str());
-			temp_vertices.push_back(vertex);
+			Vector3f Vector3f;
+			Vector3f.x = atof(content[1].c_str());
+			Vector3f.y = atof(content[2].c_str());
+			Vector3f.z = atof(content[3].c_str());
+			temp_vertices.push_back(Vector3f);
 		}
 		else
 		// handles textures coordinates
@@ -329,7 +330,7 @@ void Mesh::loadObject(
 		// handles normals
 		if (content[0] == "vn" && content.size() == 4)
 		{
-			glm::vec3 normal;
+			Vector3f normal;
 			normal.x = atof(content[1].c_str());
 			normal.y = atof(content[2].c_str());
 			normal.z = atof(content[3].c_str());
@@ -364,6 +365,25 @@ void Mesh::loadObject(
 				normalIndices.push_back( atoi(content[4].c_str()) );
 				normalIndices.push_back( atoi(content[6].c_str()) );
 			}
+			else
+			if (content.size() == 4)
+			{
+				vertexIndices.push_back( atoi(content[1].c_str()) );
+				vertexIndices.push_back( atoi(content[2].c_str()) );
+				vertexIndices.push_back( atoi(content[3].c_str()) );
+
+			if (!first) {
+			Vector3f normal = { 1, 1, 1 };
+			temp_normals.push_back(normal);
+			temp_normals.push_back(normal);
+			temp_normals.push_back(normal);
+			first = true;
+			}
+
+				normalIndices.push_back( 1 );
+				normalIndices.push_back( 1 );
+				normalIndices.push_back( 1 );
+			}
 		}
 	}
 
@@ -372,11 +392,11 @@ void Mesh::loadObject(
 	//	throw 1;
 
 	count = vertexIndices.size();
-	vertices = new Vertex[count];
-	colors   = new Vector3[count];
-	normals  = new Vector3[count];
+	vertices = new Vector3f[count];
+	colors   = new Vector3f[count];
+	normals  = new Vector3f[count];
 
-	// for each vertex of each triangle
+	// for each Vector3f of each triangle
 	for (uint32_t i = 0; i < vertexIndices.size(); i++)
 	{
 		// Get the indices of its attributes
@@ -385,17 +405,18 @@ void Mesh::loadObject(
 		unsigned int normalIndex = normalIndices[i];
 
 		// Get the attributes thanks to the index
-		glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
+		Vector3f vertex = temp_vertices[ vertexIndex-1 ];
 		//glm::vec2 uv = temp_uvs[ uvIndex-1 ];
-		glm::vec3 normal = temp_normals[ normalIndex-1 ];
+		Vector3f normal = temp_normals[ normalIndex-1 ];
 
-		vertices[i].fromGLM(vertex);
+		vertices[i] = vertex;
 		//colors[i].fromGLM(uv);
 		colors[i].x = 1.0f;
 		colors[i].y = 1.0f;
 		colors[i].z = 1.0f;
-		normals[i].fromGLM(normal);
+		normals[i] = normal;
 	}
+	//std::cout << "Done" << vertexIndices.size() << std::endl;
 }
 
 
@@ -454,9 +475,9 @@ void Cube::draw() const
 
 std::ostream &operator << (
 	std::ostream &out,
-	const Vertex &vertex )
+	const Vector3f &Vector3f )
 {
-	out << "[ x = " << vertex.x
-		<< "; y = " << vertex.y
-		<< "; y = " << vertex.y << "]";
+	out << "[ x = " << Vector3f.x
+		<< "; y = " << Vector3f.y
+		<< "; y = " << Vector3f.y << "]";
 }

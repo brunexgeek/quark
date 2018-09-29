@@ -2,6 +2,8 @@
 #define ENGINE_CAMERA_HH
 
 
+#include <engine/Vector3.hh>
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 
@@ -12,34 +14,34 @@ class Camera
 		static constexpr float AR_16x9  = 16.0F / 9.0F;
 
 		Camera(
-			const glm::vec3 &position,
-			const glm::vec3 &target,
+			const Vector3f &position,
+			const Vector3f &target,
 			float fov = 66.0F,
 			float aspect = AR_4x3 );
 
 		virtual ~Camera();
 
-		const glm::vec3 &getPosition() const;
+		const Vector3f &getPosition() const;
 
-		const glm::vec3 &getTarget() const;
+		const Vector3f &getTarget() const;
 
 		const glm::mat4 &getMatrix() const;
 
 		const glm::mat4 &getGlobalMatrix() const;
 
 		void rotateTarget(
-			const glm::vec3 &angles );
+			const Vector3f &angles );
 
 		void rotateCamera(
-			const glm::vec3 &angles );
+			const Vector3f &angles );
 
-		void move(
-			glm::vec3 inc );
+		void translate(
+			Vector3f inc );
 
 	protected:
-		glm::vec3 position_;
-		glm::vec3 target_;
-		glm::vec3 angles_;
+		Vector3f position_;
+		Vector3f target_;
+		Vector3f angles_;
 		glm::mat4 matrix_;
 		glm::mat4 projection_;
 		glm::mat4 globalMatrix_;
@@ -47,8 +49,8 @@ class Camera
 		float aspect_;
 
 		static void rotatePoint(
-			glm::vec3 &object,
-			const glm::vec3 &angles );
+			Vector3f &object,
+			const Vector3f &angles );
 
 		void update();
 };

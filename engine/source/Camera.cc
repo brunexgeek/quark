@@ -4,13 +4,13 @@
 
 
 Camera::Camera(
-	const glm::vec3 &position,
-	const glm::vec3 &target,
+	const Vector3f &position,
+	const Vector3f &target,
 	float fov,
 	float aspect ) : position_(position), target_(target), fov_(fov),
 		aspect_(aspect), angles_(0)
 {
-	target_ = glm::normalize(target_) + position_;
+	//target_ = glm::normalize(target_) + position_;
 	// projection matrix with display range of 0.1 unit <-> 100 units
 	projection_ = glm::perspective(glm::radians(fov), aspect, 0.01f, 100.0f);
 	update();
@@ -23,13 +23,13 @@ Camera::~Camera()
 }
 
 
-const glm::vec3 &Camera::getPosition() const
+const Vector3f &Camera::getPosition() const
 {
 	return position_;
 }
 
 
-const glm::vec3 &Camera::getTarget() const
+const Vector3f &Camera::getTarget() const
 {
 	return target_;
 }
@@ -57,8 +57,8 @@ void Camera::update()
 }
 
 
-void Camera::move(
-	glm::vec3 inc )
+void Camera::translate(
+	Vector3f inc )
 {
 	position_ += inc;
 	target_ += inc;
@@ -67,29 +67,30 @@ void Camera::move(
 
 
 void Camera::rotatePoint(
-	glm::vec3 &object,
-	const glm::vec3 &angles )
+	Vector3f &object,
+	const Vector3f &angles )
 {
 	if (angles.x == 0 && angles.y == 0 && angles.z == 0) return;
 
-	auto applyAngle = [](glm::vec3 &object, float angle, const glm::vec3 &axis)
-	{
-		glm::mat4 rotationMat;
-		rotationMat = glm::rotate(rotationMat, angle, axis);
-		std::cout << "Angle: " << angle << "    Axis:" << axis.x << ',' << axis.y << ',' << axis.z << std::endl;
-		std::cout << "From: " << object.x << ',' << object.y << ',' << object.z << std::endl;
-		object = glm::vec3(rotationMat * glm::vec4(object, 1.0));
-		std::cout << "  To: " << object.x << ',' << object.y << ',' << object.z << std::endl << std::endl;
-	};
+	float angleX = glm::radians(angles.x);
+	float angleY = glm::radians(angles.y);
+	float angleZ = glm::radians(angles.z);
 
-	if (angles.x != 0) applyAngle(object, angles.x, glm::vec3(1, 0, 0));
-	if (angles.y != 0) applyAngle(object, angles.y, glm::vec3(0, 1, 0));
-	if (angles.z != 0) applyAngle(object, angles.z, glm::vec3(0, 0, 1));
+	glm::mat4 rotationMat;
+	if (angleX != 0) rotationMat = glm::rotate(rotationMat, angleX, glm::vec3(1, 0, 0));
+	if (angleY != 0) rotationMat = glm::rotate(rotationMat, angleY, glm::vec3(0, 1, 0));
+	if (angleZ != 0) rotationMat = glm::rotate(rotationMat, angleZ, glm::vec3(0, 0, 1));
+	//std::cout << "From: " << object.x << ',' << object.y << ',' << object.z << std::endl;
+	glm::vec3 temp = glm::vec3(rotationMat * glm::vec4(object.x, object.y, object.z, 1.0));
+	object.x = temp.x;
+	object.y = temp.y;
+	object.z = temp.z;
+	//std::cout << "  To: " << object.x << ',' << object.y << ',' << object.z << std::endl << std::endl;
 }
 
 
 void Camera::rotateTarget(
-	const glm::vec3 &angles )
+	const Vector3f &angles )
 {
 	target_ -= position_;
 	rotatePoint(target_, angles);
@@ -99,8 +100,10 @@ void Camera::rotateTarget(
 
 
 void Camera::rotateCamera(
-	const glm::vec3 &angles )
+	const Vector3f &angles )
 {
+	position_ -= target_;
 	rotatePoint(position_, angles);
+	position_ += target_;
 	update();
 }

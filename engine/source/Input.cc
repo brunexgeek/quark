@@ -24,13 +24,13 @@ Input::Input() :
 	m_mouseX(0),
 	m_mouseY(0)
 {
-	memset(m_inputs, 0, NUM_KEYS * sizeof(bool));
-	memset(m_downKeys, 0, NUM_KEYS * sizeof(bool));
-	memset(m_upKeys, 0, NUM_KEYS * sizeof(bool));
-
-	memset(m_mouseInput, 0, NUM_MOUSEBUTTONS * sizeof(bool));
-	memset(m_downMouse, 0, NUM_MOUSEBUTTONS * sizeof(bool));
-	memset(m_upMouse, 0, NUM_MOUSEBUTTONS * sizeof(bool));
+	//memset(m_inputs, 0, NUM_KEYS * sizeof(bool));
+	//memset(m_downKeys, 0, NUM_KEYS * sizeof(bool));
+	//memset(m_upKeys, 0, NUM_KEYS * sizeof(bool));
+	memset(keyboard, 0, NUM_KEYS * sizeof(uint8_t));
+	memset(mouseButton, 0, NUM_MOUSEBUTTONS * sizeof(bool));
+	m_mouseX = m_mouseY = 0;
+	mouseDelta.x = mouseDelta.y = 0;
 
 	SDL_ShowCursor(SDL_ENABLE);
 }
@@ -65,7 +65,7 @@ bool Input::isCursorGrabbed() const
 	return SDL_GetRelativeMouseMode() != 0;
 }
 
-void Input::setMousePosition(const glm::vec2& pos) const
+void Input::setMousePosition(const Vector2f& pos) const
 {
 	//SDL_WarpMouseInWindow(m_window->GetSDLWindow(), (int)pos.GetX(), (int)pos.GetY());
 //	SDLSetMousePosition((int)pos.GetX(), (int)pos.GetY());
@@ -74,23 +74,6 @@ void Input::setMousePosition(const glm::vec2& pos) const
 
 void Input::update()
 {
-	/*for(int i = 0; i < Input::NUM_MOUSEBUTTONS; i++)
-	{
-		setMouseDown(i, false);
-		setMouseUp(i, false);
-	}
-
-	for(int i = 0; i < Input::NUM_KEYS; i++)
-	{
-		setKeyDown(i, false);
-		setKeyUp(i, false);
-	}*/
-    memset(m_inputs, 0, sizeof(m_inputs));
-    memset(m_downKeys, 0, sizeof(m_downKeys));
-    memset(m_upKeys, 0, sizeof(m_upKeys));
-    memset(m_mouseInput, 0, sizeof(m_mouseInput));
-    memset(m_downMouse, 0, sizeof(m_downMouse));
-    memset(m_upMouse, 0, sizeof(m_upMouse));
 	mouseDelta.x = mouseDelta.y = 0;
 
 	SDL_Event e;
@@ -112,28 +95,24 @@ void Input::update()
 			int value = e.key.keysym.scancode;
 
 			setKey(value, true);
-			setKeyDown(value, true);
 		}
 		if(e.type == SDL_KEYUP)
 		{
 			int value = e.key.keysym.scancode;
 
 			setKey(value, false);
-			setKeyUp(value, true);
 		}
 		if(e.type == SDL_MOUSEBUTTONDOWN)
 		{
 			int value = e.button.button;
 
-			setMouse(value, true);
-			setMouseDown(value, true);
+			setMouseButton(value, true);
 		}
 		if(e.type == SDL_MOUSEBUTTONUP)
 		{
 			int value = e.button.button;
 
-			setMouse(value, false);
-			setMouseUp(value, true);
+			setMouseButton(value, false);
 		}
 	}
 }
