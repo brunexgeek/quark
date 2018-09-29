@@ -81,17 +81,17 @@ class Mesh
 
 		~Mesh();
 
-		constexpr uint32_t getVertexHandle() const { return vertexId; }
+		constexpr uint32_t getVertexHandle() const { return vertexHandle_; }
 
-		constexpr uint32_t getNormalHandle() const { return normalId; }
+		constexpr uint32_t getNormalHandle() const { return normalHandle_; }
 
-		constexpr uint32_t getFaceIndexHandle() const { return faceId_; }
+		constexpr uint32_t getFaceIndexHandle() const { return faceHandle_; }
 
 		constexpr uint32_t getColorId() const;
 
-		constexpr uint32_t getVertexCount() const;
+		constexpr uint32_t getVertexCount() const { return vertexCount_; }
 
-		constexpr uint32_t getFaceCount() const { return faceCount; }
+		constexpr uint32_t getFaceCount() const { return faceCount_; }
 
 		void setVertex(
 			const Vector3f *vertex,
@@ -109,15 +109,16 @@ class Mesh
 			uint32_t size );
 
 	protected:
-		uint32_t vertexId;
-		uint32_t faceId_;
-		uint32_t normalId;
-		uint32_t colorId;
-		uint32_t count;
-		uint32_t faceCount;
+		uint32_t vertexHandle_;
+		uint32_t normalHandle_;
+		uint32_t faceHandle_;
+		//uint32_t colorsId_;
+		uint32_t vertexCount_;
+		uint32_t normalCount_;
+		uint32_t faceCount_;
 		bool isDynamic;
 
-		void initialize(
+		void populate(
 			std::vector<Vector3f> &vertex,
 			std::vector<Vector3f> &normal,
 			std::vector<Vector3u> &faces,
@@ -150,8 +151,7 @@ class Mesh
 			std::istream &in,
 			std::vector<Vector3f> &vertices,
 			std::vector<Vector3f> &normals,
-			std::vector<Vector3u> &faceIndex,
-			std::vector<Vector3u> &normalIndex );
+			std::vector<Vector3u> &faceIndex );
 };
 
 

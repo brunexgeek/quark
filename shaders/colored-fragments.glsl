@@ -13,14 +13,14 @@ out vec3 color;
 // Values that stay constant for the whole mesh.
 uniform sampler2D textureSample;
 //uniform mat4 MV;
-uniform vec3 LightPosition_worldspace;
+uniform vec3 LightPositionWS;
 
 void main()
 {
 	// Light emission properties
 	// You probably want to put them as uniforms
 	vec3 LightColor = vec3(1,1,1);
-	float LightPower = 30.0f;
+	float LightPower = 1.0f;
 
 	// Material properties
 	vec3 MaterialDiffuseColor = Color;
@@ -29,7 +29,7 @@ void main()
 	vec3 MaterialSpecularColor = vec3(0.3,0.3,0.3);
 
 	// Distance to the light
-	float distance = length( LightPosition_worldspace - Position_worldspace );
+	float distance = length( LightPositionWS - Position_worldspace );
 
 	// Normal of the computed fragment, in camera space
 	vec3 n = normalize( Normal_cameraspace );
@@ -56,7 +56,7 @@ void main()
 		// Ambient : simulates indirect lighting
 		MaterialAmbientColor +
 		// Diffuse : "color" of the object
-		MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +
+		MaterialDiffuseColor * LightColor * LightPower * cosTheta / (/*distance * distance*/ 1) +
 		// Specular : reflective highlight, like a mirror
 		MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
 #else

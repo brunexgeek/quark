@@ -6,9 +6,10 @@
 #include <getopt.h>
 #include <stdint.h>
 #include <cstring>
+#include <list>
 
 #include <engine/Quaternion.hh>
-#include <engine/Vector3.hh>
+#include <engine/Vector.hh>
 
 
 std::string inputFileName;
@@ -32,14 +33,24 @@ struct WavefrontMaterial
 };
 
 
+struct WavefrontVertex
+{
+	//uint32_t index;
+	Vector3f vertex;
+	Vector3f normal;
+	//Vector3f color;
+	//Vector2f uv;
+};
+
+
 struct WavefrontObject
 {
-	std::vector<Vector3f> vertices;
-	std::vector<int> materials;
-	std::vector<Vector3f> normals;
-	std::vector<Vector3u> faceIndex; // every element make a triangle
-	std::vector<Vector3u> normalIndex; // every element make a triangle normal
+	//std::vector<Vector3u> faceIndex; // every element make a triangle
+	//std::vector<Vector3u> normalIndex; // every element make a triangle normal
+	uint32_t vertexCount;
+	uint32_t normalCount;
 	std::vector<WavefrontMaterial*> materialLibrary;
+	std::list<WavefrontVertex> faces;
 
 
     char *cleanup( char *line )
@@ -53,7 +64,7 @@ struct WavefrontObject
         if (len == 0) return nullptr;
         for (int i = len - 1; i >= 0 && ptr[i] <= ' '; --i) ptr[i] = 0;
 
-        std::cout << "Line: '" << ptr << "'" << std::endl;
+//std::cout << "Line: '" << ptr << "'" << std::endl;
         if (*ptr == 0 || *ptr == '#') return nullptr;
 
         return ptr;
@@ -81,46 +92,15 @@ struct WavefrontObject
 			{
 				if (*ptr == 0) break;
 				words.push_back(ptr);
-				std::cout << "   '" << ptr << "'" << std::endl;
+//std::cout << "   '" << ptr << "'" << std::endl;
 				break;
 			}
 			else
 			{
 				*end = 0;
-				std::cout << "   '" << ptr << "'" << std::endl;
+//std::cout << "   '" << ptr << "'" << std::endl;
 				words.push_back(ptr);
 				ptr = end = end + 1;
-			}
-		}
-	}
-
-
-	void splitText(
-		const char *text,
-		std::vector<std::string> &words )
-	{
-
-		const char *p = text;
-		const char *e = text + strlen(text);
-
-		while (p < e)
-		{
-			size_t pos = (size_t) strpbrk(p, " \t/");
-			if (pos > 0)
-				pos -= (size_t) p;
-			else
-				pos = strlen(p);
-
-			if (pos == 0)
-				++p;
-			else
-			{
-				// whether we found a line comment, just ignores the rest of the line
-				if (p[0] == '#') return;
-				// stores the current word
-				words.push_back( std::string(p, pos) );
-				//std::cout << string(p, pos) << std::endl;
-				p += pos + 1;
 			}
 		}
 	}
@@ -155,7 +135,7 @@ struct WavefrontObject
 			{
 				material = new WavefrontMaterial(content[1]);
 				materialLibrary.push_back(material);
-				std::cout << "Found material '" << content[1] << "'\n";
+//std::cout << "Found material '" << content[1] << "'\n";
 			}
 			else
 			if (content[0] == "Kd" && content.size() == 4 && material != NULL)
@@ -172,7 +152,7 @@ struct WavefrontObject
 		std::vector<std::string> values;
 		char temp[512];
 		strncpy(temp, triple.c_str(), sizeof(temp)-1);
-		std::cout << "  Face: '" << triple << "'" << std::endl;
+//std::cout << "  Face: '" << triple << "'" << std::endl;
 		split(temp, values, '/');
 		Vector3u current = { 0, 0, 0 };
 		switch (values.size())
@@ -182,13 +162,18 @@ struct WavefrontObject
 			case 1: current.x = atoi(values[0].c_str());
 			default: break;
 		}
-		std::cout << "    Vector: '" << current.x << ", " << current.y << ", " << current.z << "'" << std::endl;
+//std::cout << "    Vector: '" << current.x << ", " << current.y << ", " << current.z << "'" << std::endl;
 		return current;
 	}
 
 	void loadObject(
 		std::istream &in )
 	{
+		uint32_t indexCounter = 0;
+		std::vector<int> materials;
+		std::vector<Vector3f> vertices;
+		std::vector<Vector3f> normals;
+
 		if (in.good() == false)
 			throw std::string("Unable to read data from Wavefront input");
 
@@ -252,44 +237,48 @@ struct WavefrontObject
 			}
 			else
 			// handles faces
-			#if 0
-			if (content[0] == "f" && content.size() == 4)
-			{
-				std::vector<Vector3u> elements(3);
-				std::vector<std::string> values;
-				char temp[512];
-
-				for (size_t i = 1; i < content.size(); ++i)
-				{
-					strncpy(temp, content[i].c_str(), sizeof(temp)-1);
-					std::cout << "  Face: '" << content[i] << "'" << std::endl;
-					split(temp, values, '/');
-					Vector3u current = { 0, 0, 0 };
-					switch (values.size())
-					{
-						case 3: current.z = atoi(values[2].c_str());
-						case 2: current.y = atoi(values[1].c_str());
-						case 1: current.x = atoi(values[0].c_str());
-						default: break;
-					}
-					elements.push_back(current);
-				}
-				faces.push_back(std::vector<Vector3u>());
-				faces.back().swap(elements);
-			}
-			#else
 			if (content[0] == "f" && content.size() == 4)
 			{
 				Vector3u first  = getTriple(content[1]);
 				Vector3u second = getTriple(content[2]);
 				Vector3u third  = getTriple(content[3]);
 
-				faceIndex.push_back(Vector3u(first.x - 1, second.x - 1, third.x - 1));
-				normalIndex.push_back(Vector3u(first.z - 1, second.z - 1, third.z - 1));
+				createEntry(indexCounter++, faces, vertices, first.x - 1,  normals, first.z - 1);
+				createEntry(indexCounter++, faces, vertices, second.x - 1, normals, second.z - 1);
+				createEntry(indexCounter++, faces, vertices, third.x - 1,  normals, third.z - 1);
+
+				//faceIndex.push_back(Vector3u(first.x - 1, second.x - 1, third.x - 1));
+				//normalIndex.push_back(Vector3u(first.z - 1, second.z - 1, third.z - 1));
 			}
-			#endif
 		}
+		vertexCount = vertices.size();
+		normalCount = normals.size();
 	}
+
+	void createEntry(
+		uint32_t index,
+		std::list<WavefrontVertex> &out,
+		const std::vector<Vector3f> &vertices,
+		const uint32_t vertexIndex,
+		const std::vector<Vector3f> &normals,
+		const uint32_t normalIndex )
+	{
+		WavefrontVertex current;
+		//current.index = index;
+		current.vertex = vertices[vertexIndex];
+		current.normal = normals[normalIndex];
+		out.push_back(current);
+	}
+
+/*
+	std::list<WavefrontVertex> loadModel()
+	{
+		std::list<WavefrontVertex> entries;
+
+		for (
+
+	}
+*/
 
 	WavefrontObject(
 		std::istream &object,
@@ -301,8 +290,25 @@ struct WavefrontObject
 };
 
 
+std::ostream &operator << (
+	std::ostream &out,
+	const Vector3f &value )
+{
+	out << value.x << ' '
+		<< value.y << ' '
+		<< value.z;
+	return out;
+}
+
+
 #define WRITE_U32(out, value) do { uint32_t u32_temp_value = (uint32_t)value; (out).write( (char*) &u32_temp_value, sizeof(uint32_t)); } while(false)
 #define WRITE_U8P(out, ptr, size) do { (out).write( (char*) ptr, size); } while(false)
+#define WRITE_V3F(out, vec3f) \
+	do { \
+		(out).write( (char*) &(vec3f).x, sizeof(float)); \
+		(out).write( (char*) &(vec3f).y, sizeof(float)); \
+		(out).write( (char*) &(vec3f).z, sizeof(float)); \
+	} while(false)
 
 static void main_writeBinary(
 	std::ostream &out,
@@ -310,21 +316,47 @@ static void main_writeBinary(
 {
 	WRITE_U32(out, 0x4853454D);
 
+	uint32_t total = object.faces.size();
+
 	WRITE_U32(out, 0x54524556);
-	WRITE_U32(out, object.vertices.size());
-	WRITE_U8P(out, object.vertices.data(), object.vertices.size() * sizeof(Vector3f));
+	//WRITE_U32(out, object.vertices.size());
+	//WRITE_U8P(out, object.vertices.data(), object.vertices.size() * sizeof(Vector3f));
+	WRITE_U32(out, object.faces.size());
+	for (auto it = object.faces.begin(); it != object.faces.end(); ++it )
+	{
+		WRITE_V3F(out, it->vertex);
+		std::cerr << "v " << it->vertex << std::endl;
+	}
 
 	WRITE_U32(out, 0x4D524F4E);
-	WRITE_U32(out, object.normals.size());
-	WRITE_U8P(out, object.normals.data(), object.normals.size() * sizeof(Vector3f));
+	//WRITE_U32(out, object.normals.size());
+	//WRITE_U8P(out, object.normals.data(), object.normals.size() * sizeof(Vector3f));
+	WRITE_U32(out, object.faces.size());
+	for (auto it = object.faces.begin(); it != object.faces.end(); ++it )
+	{
+		WRITE_V3F(out, it->normal);
+		std::cerr << "vn " << it->normal << std::endl;
+	}
 
-	WRITE_U32(out, 0x58444946);
-	WRITE_U32(out, object.faceIndex.size());
-	WRITE_U8P(out, object.faceIndex.data(), object.faceIndex.size() * sizeof(Vector3u));
+	WRITE_U32(out, 0x46414345);
+	//WRITE_U32(out, object.faceIndex.size());
+	//WRITE_U8P(out, object.faceIndex.data(), object.faceIndex.size() * sizeof(Vector3u));
+	WRITE_U32(out, object.faces.size() / 3);
+	uint32_t index = 0;
+	for (auto it = object.faces.begin(); it != object.faces.end(); )
+	{
+		std::cerr << "f";
+		for (size_t i = 0; i < 3 && it != object.faces.end(); ++i, ++it)
+		{
+			WRITE_U32(out, index++);
+			std::cerr <<  ' ' << index << "//" << index;
+		}
+		std::cerr << std::endl;
+	}
 
-	WRITE_U32(out, 0x5844494E);
+	/*WRITE_U32(out, 0x5844494E);
 	WRITE_U32(out, object.normalIndex.size());
-	WRITE_U8P(out, object.normalIndex.data(), object.normalIndex.size() * sizeof(Vector3u));
+	WRITE_U8P(out, object.normalIndex.data(), object.normalIndex.size() * sizeof(Vector3u));*/
 }
 
 
@@ -376,9 +408,15 @@ int main( int argc, char **argv )
 	materialsFile.close();
 
 	std::cout << std::endl << "### Input file ###" << std::endl;
-	std::cout << "   Vertices: " << source.vertices.size() << std::endl;
-	std::cout << "    Normals: " << source.normals.size() << std::endl;
-	std::cout << "      Faces: " << source.faceIndex.size() << std::endl;
+	std::cout << "   Vertices: " << source.vertexCount << std::endl;
+	std::cout << "    Normals: " << source.normalCount << std::endl;
+	std::cout << "      Faces: " << source.faces.size() / 3 << std::endl;
+	std::cout << "  Materials: " << source.materialLibrary.size() << std::endl;
+
+	std::cout << std::endl << "### Output file ###" << std::endl;
+	std::cout << "   Vertices: " << source.faces.size() << std::endl;
+	std::cout << "    Normals: " << source.faces.size() << std::endl;
+	std::cout << "      Faces: " << source.faces.size() / 3 << std::endl;
 	std::cout << "  Materials: " << source.materialLibrary.size() << std::endl;
 
 	std::ofstream outputFile(outputFileName.c_str(), std::ios_base::ate | std::ios_base::binary);

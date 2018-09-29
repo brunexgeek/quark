@@ -53,7 +53,7 @@ Renderer::Renderer(
 	// accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 	// set the clear color and blank the screen
-	glClearColor(0, .5, 0, 1);
+	glClearColor(.1, .1, .1, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// enables face culling
 	glEnable(GL_CULL_FACE);
@@ -119,6 +119,7 @@ void Renderer::draw(
 	const Transform &transform )
 {
 	uint32_t vertexHandle = mesh.getVertexHandle();
+	uint32_t normalHandler = mesh.getNormalHandle();
 	uint32_t faceIndexHandle  = mesh.getFaceIndexHandle();
 
 	// attribute buffer 0: vertices
@@ -133,6 +134,17 @@ void Renderer::draw(
 		NULL                // array buffer offset
 	);
 
+	// attribute buffer 1: normals
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, normalHandler);
+	glVertexAttribPointer(
+		1,                                // attribute index
+		3,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		NULL                              // array buffer offset
+	);
 
 #if 0
 	// attribute buffer 1: UV or colors
@@ -179,8 +191,8 @@ void Renderer::draw(
 		(void*)0           // element array buffer offset
  	);
 #endif
+	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(0);
-	//glDisableVertexAttribArray(1);
 	//glDisableVertexAttribArray(2);
 }
 
@@ -277,7 +289,7 @@ void Renderer::setActiveShader(
 	gId        = glGetUniformLocation(program.getId(), "G");
 	mId        = glGetUniformLocation(program.getId(), "M");
 	vId        = glGetUniformLocation(program.getId(), "V");
-	lightId    = glGetUniformLocation(program.getId(), "LightPosition_worldspace");
+	lightId    = glGetUniformLocation(program.getId(), "LightPositionWS");
 }
 
 
