@@ -31,6 +31,7 @@ class Game : public Application
         Mesh *mesh;
         Light &light;
         Object *object;
+        float turnDegree = 0;
 
         Game( Renderer &renderer, Light &light) : Application(renderer), light(light)
         {
@@ -75,19 +76,37 @@ class Game : public Application
                 std::cout << "Player: " << camera.getPosition().x << " x " << camera.getPosition().z << std::endl;
                 light.setPosition(camera.getPosition());
             }
+
             if (input.isKeyDown(Input::KEY_Q))
             {
                 Camera &camera = getRenderer().getCamera();
-                Vector3f dir = Vector3f(0, .1, 0);
+                Vector3f dir = Vector3f(0, .2, 0);
                 camera.translate(dir);
                 light.setPosition(camera.getPosition());
             }
+            else
             if (input.isKeyDown(Input::KEY_Z))
             {
                 Camera &camera = getRenderer().getCamera();
-                Vector3f dir = Vector3f(0, -.1, 0);
+                Vector3f dir = Vector3f(0, -.2, 0);
                 camera.translate(dir);
                 light.setPosition(camera.getPosition());
+            }
+
+            if (input.isKeyDown(Input::KEY_D))
+            {
+                turnDegree += 1.5F;
+                if (turnDegree > 359) turnDegree = 0;
+                object->getTransform().rotate(NAN, turnDegree, NAN);
+                object->getTransform().update();
+            }
+            else
+            if (input.isKeyDown(Input::KEY_A))
+            {
+                turnDegree -= 1.5F;
+                if (turnDegree < 0) turnDegree = 359;
+                object->getTransform().rotate(NAN, turnDegree, NAN);
+                object->getTransform().update();
             }
 
             if (input.isMouseMoved())

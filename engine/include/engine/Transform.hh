@@ -19,6 +19,8 @@ class Transform
 
         const Matrix4f &getMatrix() const;
 
+        void rotate( float x, float Y, float z );
+
         void rotate( const Vector3f &angles );
 
         void reset();

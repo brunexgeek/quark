@@ -26,7 +26,7 @@ class Light
 		void setPosition( const Vector3f &pos )
 		{
 			position = pos;
-			std::cout << "Light " << this << " moved to [x: " << position.x << ", y: " << position.y << ", z: " << position.z << "]\n";
+			//std::cout << "Light " << this << " moved to [x: " << position.x << ", y: " << position.y << ", z: " << position.z << "]\n";
 		}
 
 		void rotateZ(

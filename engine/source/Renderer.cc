@@ -163,15 +163,6 @@ void Renderer::draw(
 	//glBindTexture(GL_TEXTURE_2D, texture.getTexture());
 	glUniform1i(textureId, 0);
 	// creates the model matrix
-	/*glm::mat4 modelMatrix = glm::mat4(1.0f);
-	modelMatrix[3][0] = position.x;
-	modelMatrix[3][1] = position.y;
-	modelMatrix[3][2] = position.z;
-	#define __90DEGREES ( 90 * 3.1415 ) / 180
-	modelMatrix[1][1] = std::cos(__90DEGREES);
-	modelMatrix[1][2] = -std::sin(__90DEGREES);
-	modelMatrix[2][1] = std::sin(__90DEGREES);
-	modelMatrix[2][2] = std::cos(__90DEGREES);*/
 	glUniformMatrix4fv(mId, 1, GL_FALSE, (const GLfloat*) transform.getMatrix().data);
 
 	// draw the triangles
