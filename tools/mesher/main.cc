@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <cstring>
 
+#include <engine/Quaternion.hh>
 #include <engine/Vector3.hh>
 
 
@@ -36,7 +37,8 @@ struct WavefrontObject
 	std::vector<Vector3f> vertices;
 	std::vector<int> materials;
 	std::vector<Vector3f> normals;
-	std::vector< std::vector<int> > faces;
+	std::vector<Vector3u> faceIndex; // every element make a triangle
+	std::vector<Vector3u> normalIndex; // every element make a triangle normal
 	std::vector<WavefrontMaterial*> materialLibrary;
 
 
@@ -49,13 +51,48 @@ struct WavefrontObject
         // remove line control characters from the end
         size_t len = strlen(ptr);
         if (len == 0) return nullptr;
-        for (int i = len - 1; i >= 0 && ptr[i] < ' '; --i) ptr[i] = 0;
+        for (int i = len - 1; i >= 0 && ptr[i] <= ' '; --i) ptr[i] = 0;
 
         std::cout << "Line: '" << ptr << "'" << std::endl;
-        if (*ptr == 0) return nullptr;
+        if (*ptr == 0 || *ptr == '#') return nullptr;
 
         return ptr;
     }
+
+
+	static void split(
+		char *text,
+		std::vector<std::string> &words,
+		const char separator = ' ' )
+	{
+
+		char *ptr = text;
+		char *end = text;
+
+		while (*end != 0)
+		{
+			// remove leading whitespaces
+			while (*ptr == ' ' || *ptr == '\t') end = ++ptr;
+			// look for the next whitespace
+			//while (*end != ' ' && *end != '\t' && *end != 0) ++end;
+			while (*end != separator && *end != 0) ++end;
+
+			if (*end == 0)
+			{
+				if (*ptr == 0) break;
+				words.push_back(ptr);
+				std::cout << "   '" << ptr << "'" << std::endl;
+				break;
+			}
+			else
+			{
+				*end = 0;
+				std::cout << "   '" << ptr << "'" << std::endl;
+				words.push_back(ptr);
+				ptr = end = end + 1;
+			}
+		}
+	}
 
 
 	void splitText(
@@ -95,7 +132,7 @@ struct WavefrontObject
 		if (in.good() == false)
 			throw std::string("Unable to read data from Wavefront input");
 
-		char line[128];
+		char line[1024];
 		std::vector<std::string> content;
 
 		WavefrontMaterial *material = NULL;
@@ -109,7 +146,8 @@ struct WavefrontObject
 
 			// parses the line content
 			content.clear();
-			splitText(ptr, content);
+			split(ptr, content);
+			continue;
 
 			if (content.size() == 0) continue;
 
@@ -129,6 +167,25 @@ struct WavefrontObject
 		}
 	}
 
+	static Vector3u getTriple( const std::string &triple )
+	{
+		std::vector<std::string> values;
+		char temp[512];
+		strncpy(temp, triple.c_str(), sizeof(temp)-1);
+		std::cout << "  Face: '" << triple << "'" << std::endl;
+		split(temp, values, '/');
+		Vector3u current = { 0, 0, 0 };
+		switch (values.size())
+		{
+			case 3: current.z = atoi(values[2].c_str());
+			case 2: current.y = atoi(values[1].c_str());
+			case 1: current.x = atoi(values[0].c_str());
+			default: break;
+		}
+		std::cout << "    Vector: '" << current.x << ", " << current.y << ", " << current.z << "'" << std::endl;
+		return current;
+	}
+
 	void loadObject(
 		std::istream &in )
 	{
@@ -137,7 +194,7 @@ struct WavefrontObject
 
 		char line[128];
 		std::vector<std::string> content;
-		int currentMaterial = 0;
+		int currentMaterial = -1;
 
 		while (in.good())
 		{
@@ -148,21 +205,27 @@ struct WavefrontObject
 
 			// parses the line content
 			content.clear();
-			splitText(ptr, content);
+			split(ptr, content);
+			//splitText(ptr, content);
 
 			if (content.size() == 0) continue;
 
 			// handles vertices
-			if (content[0] == "v" && content.size() == 4)
+			if (content[0] == "v" && (content.size() == 4 || content.size() == 5))
 			{
 				Vector3f vertex;
 				vertex.x = atof(content[1].c_str());
 				vertex.y = atof(content[2].c_str());
 				vertex.z = atof(content[3].c_str());
+				/*if (content.size() == 5)
+					vertex.w = atof(content[4].c_str());
+				else
+					vertex.w = 1.0F;*/
 				vertices.push_back(vertex);
 				materials.push_back(currentMaterial);
 			}
 			else
+			#if 0
 			// handles textures coordinates
 			if (content[0] == "usemtl" && content.size() == 2)
 			{
@@ -177,6 +240,7 @@ struct WavefrontObject
 				}
 			}
 			else
+			#endif
 			// handles normals
 			if (content[0] == "vn" && content.size() == 4)
 			{
@@ -188,15 +252,42 @@ struct WavefrontObject
 			}
 			else
 			// handles faces
-			if (content[0] == "f")
+			#if 0
+			if (content[0] == "f" && content.size() == 4)
 			{
-				faces.resize( faces.size() + 1 );
-				int index = faces.size() - 1;
-				faces[index].resize(content.size() - 1);
+				std::vector<Vector3u> elements(3);
+				std::vector<std::string> values;
+				char temp[512];
 
-				for (int i = 1, t = content.size(); i < t; ++i)
-					faces[index][i - 1] = atoi(content[i].c_str());
+				for (size_t i = 1; i < content.size(); ++i)
+				{
+					strncpy(temp, content[i].c_str(), sizeof(temp)-1);
+					std::cout << "  Face: '" << content[i] << "'" << std::endl;
+					split(temp, values, '/');
+					Vector3u current = { 0, 0, 0 };
+					switch (values.size())
+					{
+						case 3: current.z = atoi(values[2].c_str());
+						case 2: current.y = atoi(values[1].c_str());
+						case 1: current.x = atoi(values[0].c_str());
+						default: break;
+					}
+					elements.push_back(current);
+				}
+				faces.push_back(std::vector<Vector3u>());
+				faces.back().swap(elements);
 			}
+			#else
+			if (content[0] == "f" && content.size() == 4)
+			{
+				Vector3u first  = getTriple(content[1]);
+				Vector3u second = getTriple(content[2]);
+				Vector3u third  = getTriple(content[3]);
+
+				faceIndex.push_back(Vector3u(first.x - 1, second.x - 1, third.x - 1));
+				normalIndex.push_back(Vector3u(first.z - 1, second.z - 1, third.z - 1));
+			}
+			#endif
 		}
 	}
 
@@ -210,10 +301,31 @@ struct WavefrontObject
 };
 
 
-struct BinaryObject
-{
+#define WRITE_U32(out, value) do { uint32_t u32_temp_value = (uint32_t)value; (out).write( (char*) &u32_temp_value, sizeof(uint32_t)); } while(false)
+#define WRITE_U8P(out, ptr, size) do { (out).write( (char*) ptr, size); } while(false)
 
-};
+static void main_writeBinary(
+	std::ostream &out,
+	const WavefrontObject &object )
+{
+	WRITE_U32(out, 0x4853454D);
+
+	WRITE_U32(out, 0x54524556);
+	WRITE_U32(out, object.vertices.size());
+	WRITE_U8P(out, object.vertices.data(), object.vertices.size() * sizeof(Vector3f));
+
+	WRITE_U32(out, 0x4D524F4E);
+	WRITE_U32(out, object.normals.size());
+	WRITE_U8P(out, object.normals.data(), object.normals.size() * sizeof(Vector3f));
+
+	WRITE_U32(out, 0x58444946);
+	WRITE_U32(out, object.faceIndex.size());
+	WRITE_U8P(out, object.faceIndex.data(), object.faceIndex.size() * sizeof(Vector3u));
+
+	WRITE_U32(out, 0x5844494E);
+	WRITE_U32(out, object.normalIndex.size());
+	WRITE_U8P(out, object.normalIndex.data(), object.normalIndex.size() * sizeof(Vector3u));
+}
 
 
 static void main_usage()
@@ -266,11 +378,12 @@ int main( int argc, char **argv )
 	std::cout << std::endl << "### Input file ###" << std::endl;
 	std::cout << "   Vertices: " << source.vertices.size() << std::endl;
 	std::cout << "    Normals: " << source.normals.size() << std::endl;
-	std::cout << "  Triangles: " << source.faces.size() << std::endl;
+	std::cout << "      Faces: " << source.faceIndex.size() << std::endl;
 	std::cout << "  Materials: " << source.materialLibrary.size() << std::endl;
 
-	/*std::ofstream outputFile(outputFileName.c_str());
-	uint32_t count = (uint32_t) source.vertices.size();
-	outputFile.write( (char*) &count, sizeof(uint32_t));
-	outputFile.close();*/
+	std::ofstream outputFile(outputFileName.c_str(), std::ios_base::ate | std::ios_base::binary);
+	main_writeBinary(outputFile, source);
+	//uint32_t count = (uint32_t) source.vertices.size();
+	//outputFile.write( (char*) &count, sizeof(uint32_t));
+	outputFile.close();
 }

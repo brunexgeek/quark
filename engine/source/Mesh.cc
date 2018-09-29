@@ -14,13 +14,12 @@ using std::istream;
 
 
 Mesh::Mesh(
-	const Vector3f *vertex,
-	const Vector3f *color,
-	const Vector3f *normal,
-	uint32_t count,
+	std::vector<Vector3f> &vertex,
+	std::vector<Vector3f> &normal,
+	std::vector<Vector3u> &faces,
 	bool isDynamic ) : count(count), isDynamic(isDynamic)
 {
-	initialize(vertex, color, normal, count, isDynamic);
+	initialize(vertex, normal, faces, isDynamic);
 }
 
 Mesh::~Mesh()
@@ -32,10 +31,9 @@ Mesh::~Mesh()
 
 
 void Mesh::initialize(
-	const Vector3f *vertex,
-	const Vector3f *color,
-	const Vector3f *normal,
-	uint32_t count,
+	std::vector<Vector3f> &vertex,
+	std::vector<Vector3f> &normal,
+	std::vector<Vector3u> &faces,
 	bool isDynamic )
 {
 	this->count = count;
@@ -43,18 +41,24 @@ void Mesh::initialize(
 
 	glGenBuffers(1, &vertexId);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3f) * count, vertex,
+	glBufferData(GL_ARRAY_BUFFER, Vector3f::SIZE * vertex.size(), vertex.data(),
 		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
-	glGenBuffers(1, &colorId);
+	glGenBuffers(1, &faceId_);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faceId_);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, Vector3u::SIZE * faces.size(), faces.data(),
+		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+	faceCount = (uint32_t) faces.size();
+
+	/*glGenBuffers(1, &colorId);
 	glBindBuffer(GL_ARRAY_BUFFER, colorId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3f) * count, color,
-		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, Vector3f::SIZE * count, color,
+		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);*/
 
-	glGenBuffers(1, &normalId);
+	/*glGenBuffers(1, &normalId);
 	glBindBuffer(GL_ARRAY_BUFFER, normalId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3f) * count, normal,
-		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, Vector3f::SIZE * normal.size(), normal.data(),
+		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);*/
 }
 
 
@@ -65,19 +69,6 @@ Vector3f *Mesh::computeNormal(
 	// TODO: implement this!
 	return NULL;
 }
-
-
-uint32_t Mesh::getVertexId() const
-{
-	return vertexId;
-}
-
-
-uint32_t Mesh::getNormalId() const
-{
-	return normalId;
-}
-
 
 uint32_t Mesh::getColorId() const
 {
@@ -173,112 +164,87 @@ Mesh::Mesh(
 	std::istream &in,
 	bool isDynamic )
 {
-	Vector3f *vertex;
-	Vector3f *color;
-	Vector3f *normal;
-	uint32_t count;
+	std::vector<Vector3f> vertex;
+	std::vector<Vector3f> normal;
+	std::vector<Vector3u> faceIndex;
+	std::vector<Vector3u> normalIndex;
 
 	//loadBin(in, Vector3f, color, normal, count);
-	loadObject(in, vertex, color, normal, count);
-	initialize(vertex, color, normal, count, isDynamic);
+	loadBinary(in, vertex, normal, faceIndex, normalIndex);
+	initialize(vertex, normal, faceIndex, isDynamic);
 }
 
 
-void Mesh::loadBin(
-	istream &in,
-	Vector3f *&vertices,
-	Vector3f *&colors,
-	Vector3f *&normals,
-	uint32_t &count )
+static uint32_t readUnsigned32(
+	std::istream &in )
+{
+	uint32_t out;
+	in.read( (char*) &out, sizeof(uint32_t) );
+	return out;
+}
+
+
+void Mesh::loadBinary(
+	std::istream &in,
+	std::vector<Vector3f> &vertices,
+	std::vector<Vector3f> &normals,
+	std::vector<Vector3u> &faceIndex,
+	std::vector<Vector3u> &normalIndex )
 {
 	if (in.good() == false)
 		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
 
-	char line[128];
-	std::vector<uint32_t> vertexIndices, normalIndices;
-	Vector3f *temp_vertices;
-	Vector3f *temp_normals;
-	vector<string> content;
-
-	in.seekg(0x24, in.beg);
+	in.seekg(0x00000008, in.beg);
 	uint32_t total;
 
 	// reads the vertices
 	in.read( (char*) &total, sizeof(uint32_t) );
 	if (in.good() == false || total > 0x7FFFF)
 		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
-	temp_vertices = new Vector3f[total]();
-	in.read( (char*) temp_vertices, total * sizeof(Vector3f) );
+	if (total > 0)
+	{
+		vertices.resize(total);
+		in.read( (char*) vertices.data(), total * sizeof(Vector3f) );
+	}
 
 	// reads the normals
+	in.seekg(0x00000004, in.cur);
 	in.read( (char*) &total, sizeof(uint32_t) );
 	if (in.good() == false || total > 0x7FFFF)
 		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
-	temp_normals = new Vector3f[total]();
-	in.read( (char*) temp_normals, total * sizeof(Vector3f) );
-
-	uint32_t groups;
-	in.read( (char*) &groups, sizeof(uint32_t) );
-
-	for (int g = 0; g < groups; ++g)
+	if (total > 0)
 	{
-		in.seekg(0x10, in.cur);
-		in.read( (char*) &total, sizeof(uint32_t) );
-
-		for (int i = 0; i < total; ++i)
-		{
-			uint16_t index;
-
-			in.read( (char*) &index, sizeof(uint16_t) );
-			vertexIndices.push_back(index);
-			in.read( (char*) &index, sizeof(uint16_t) );
-			vertexIndices.push_back(index);
-			in.read( (char*) &index, sizeof(uint16_t) );
-			vertexIndices.push_back(index);
-
-			in.read( (char*) &index, sizeof(uint16_t) );
-			normalIndices.push_back(index);
-			in.read( (char*) &index, sizeof(uint16_t) );
-			normalIndices.push_back(index);
-			in.read( (char*) &index, sizeof(uint16_t) );
-			normalIndices.push_back(index);
-		}
+		normals.resize(total);
+		in.read( (char*) normals.data(), total * sizeof(Vector3f) );
 	}
-	// the amount of vertices, UVs and normals must be equal
-	//if (!(temp_vertices.size() == temp_uvs.size() && temp_vertices.size() == temp_normals.size()))
-	//	throw 1;
 
-	count = vertexIndices.size();
-	vertices = new Vector3f[count];
-	colors   = new Vector3f[count];
-	normals  = new Vector3f[count];
-
-	// for each Vector3f of each triangle
-	for (uint32_t i = 0; i < vertexIndices.size(); i++)
+	// reads the face indexes
+	in.seekg(0x00000004, in.cur);
+	in.read( (char*) &total, sizeof(uint32_t) );
+	if (in.good() == false || total > 0x7FFFF)
+		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
+	if (total > 0)
 	{
-		// Get the indices of its attributes
-		unsigned int vertexIndex = vertexIndices[i];
-		//unsigned int uvIndex = uvIndices[i];
-		unsigned int normalIndex = normalIndices[i];
-
-		// Get the attributes thanks to the index
-		Vector3f &vertex = temp_vertices[ vertexIndex ];
-		//glm::vec2 uv = temp_uvs[ uvIndex-1 ];
-		Vector3f &normal = temp_normals[ normalIndex ];
-
-		vertices[i] = vertex;
-		//colors[i].fromGLM(uv);
-		colors[i].x = 0.0f;
-		colors[i].y = 1.0f;
-		colors[i].z = 1.0f;
-		normals[i] = normal;
-		/*normals[i].x = 1.0f;
-		normals[i].y = 1.0f;
-		normals[i].z = 1.0f;*/
+		faceIndex.resize(total);
+		in.read( (char*) faceIndex.data(), total * sizeof(Vector3f) );
 	}
+	// reads the normal indexes
+	in.seekg(0x00000004, in.cur);
+	in.read( (char*) &total, sizeof(uint32_t) );
+	if (in.good() == false || total > 0x7FFFF)
+		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
+	if (total > 0)
+	{
+		normalIndex.resize(total);
+		in.read( (char*) normalIndex.data(), total * sizeof(Vector3f) );
+	}
+
+	std::cout << "Loaded model:" << std::endl;
+	std::cout << "      Faces: " << faceIndex.size() << std::endl;
+	std::cout << "   Vertices: " << vertices.size() << std::endl;
 }
 
-
+#if 0
 void Mesh::loadObject(
 	istream &in,
 	Vector3f *&vertices,
@@ -418,7 +384,7 @@ static bool first = false;
 	}
 	//std::cout << "Done" << vertexIndices.size() << std::endl;
 }
-
+#endif
 
 /*
 

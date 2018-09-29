@@ -3,12 +3,14 @@
 
 
 #include <cmath>
+#include <stdint.h>
 
 
 template<typename T>
 struct Vector3
 {
     T x, y, z;
+    static const size_t SIZE = sizeof(T) * 3;
 
     Vector3()
     {
@@ -133,5 +135,6 @@ struct Vector3
 
 
 typedef Vector3<float> Vector3f;
+typedef Vector3<uint32_t> Vector3u;
 
 #endif // ENGINE_VECTOR3_HH

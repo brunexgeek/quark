@@ -6,6 +6,7 @@
 #include <iostream>
 #include <engine/Vector3.hh>
 #include <engine/Vector2.hh>
+#include <vector>
 
 
 #pragma pack(push, 4)
@@ -73,21 +74,24 @@ class Mesh
 			bool isDynamic = false );
 
 		Mesh(
-			const Vector3f *vetices,
-			const Vector3f *colors,
-			const Vector3f *normals,
-			uint32_t count,
+			std::vector<Vector3f> &vertex,
+			std::vector<Vector3f> &normal,
+			std::vector<Vector3u> &faces,
 			bool isDynamic = false );
 
 		~Mesh();
 
-		uint32_t getVertexId() const;
+		constexpr uint32_t getVertexHandle() const { return vertexId; }
 
-		uint32_t getNormalId() const;
+		constexpr uint32_t getNormalHandle() const { return normalId; }
 
-		uint32_t getColorId() const;
+		constexpr uint32_t getFaceIndexHandle() const { return faceId_; }
 
-		uint32_t getVertexCount() const;
+		constexpr uint32_t getColorId() const;
+
+		constexpr uint32_t getVertexCount() const;
+
+		constexpr uint32_t getFaceCount() const { return faceCount; }
 
 		void setVertex(
 			const Vector3f *vertex,
@@ -106,16 +110,17 @@ class Mesh
 
 	protected:
 		uint32_t vertexId;
+		uint32_t faceId_;
 		uint32_t normalId;
 		uint32_t colorId;
 		uint32_t count;
+		uint32_t faceCount;
 		bool isDynamic;
 
 		void initialize(
-			const Vector3f *vertex,
-			const Vector3f *color,
-			const Vector3f *normal,
-			uint32_t count,
+			std::vector<Vector3f> &vertex,
+			std::vector<Vector3f> &normal,
+			std::vector<Vector3u> &faces,
 			bool isDynamic );
 
 		Vector3f *computeNormal(
@@ -141,12 +146,12 @@ class Mesh
 			Vector3f *&normals,
 			uint32_t &count );
 
-		void loadBin(
+		void loadBinary(
 			std::istream &in,
-			Vector3f *&vertices,
-			Vector3f *&colors,
-			Vector3f *&normals,
-			uint32_t &count );
+			std::vector<Vector3f> &vertices,
+			std::vector<Vector3f> &normals,
+			std::vector<Vector3u> &faceIndex,
+			std::vector<Vector3u> &normalIndex );
 };
 
 

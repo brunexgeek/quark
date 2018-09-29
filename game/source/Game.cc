@@ -41,13 +41,13 @@ class Game : public Application
             /*std::ifstream julietteBin("juliette.blend.bin");
 	        julietteMesh = new Mesh(julietteBin);
 	        julietteBin.close();*/
-            std::ifstream input("elexis.obj");
+            std::ifstream input("untitled.mesher");
 	        mesh = new Mesh(input);
 	        input.close();
 
             object = new Object(*mesh);
-            object->getTransform().rotate({90, 0, 0});
-            object->getTransform().scale({0, 0, 2});
+            //object->getTransform().rotate({90, 0, 0});
+            object->getTransform().scale({30, 30, 30});
             object->getTransform().update();
         }
 

@@ -53,7 +53,7 @@ Renderer::Renderer(
 	// accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 	// set the clear color and blank the screen
-	glClearColor(0, 0, 0, 1);
+	glClearColor(0, .5, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// enables face culling
 	glEnable(GL_CULL_FACE);
@@ -118,13 +118,12 @@ void Renderer::draw(
 	//const Material &material,
 	const Transform &transform )
 {
-	uint32_t vertexId = mesh.getVertexId();
-	uint32_t normalId = mesh.getNormalId();
-	uint32_t colorId  = mesh.getColorId();
+	uint32_t vertexHandle = mesh.getVertexHandle();
+	uint32_t faceIndexHandle  = mesh.getFaceIndexHandle();
 
 	// attribute buffer 0: vertices
 	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexId);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexHandle);
 	glVertexAttribPointer(
 		0,                  // attribute index
 		3,                  // size
@@ -134,6 +133,8 @@ void Renderer::draw(
 		NULL                // array buffer offset
 	);
 
+
+#if 0
 	// attribute buffer 1: UV or colors
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, colorId);
@@ -157,7 +158,7 @@ void Renderer::draw(
 		0,                                // stride
 		NULL                              // array buffer offset
 	);
-
+#endif
 	// activates the mesh texture
 	//glActiveTexture(GL_TEXTURE0);
 	//glBindTexture(GL_TEXTURE_2D, texture.getTexture());
@@ -166,11 +167,21 @@ void Renderer::draw(
 	glUniformMatrix4fv(mId, 1, GL_FALSE, (const GLfloat*) transform.getMatrix().data);
 
 	// draw the triangles
+#if 0
 	glDrawArrays(GL_TRIANGLES, 0, mesh.getVertexCount());
-
+#else
+	// attribute buffer 1: UV or colors
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faceIndexHandle);
+	glDrawElements(
+		GL_TRIANGLES,      // mode
+		mesh.getFaceCount() * 3,    // count
+		GL_UNSIGNED_INT,   // type
+		(void*)0           // element array buffer offset
+ 	);
+#endif
 	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
+	//glDisableVertexAttribArray(1);
+	//glDisableVertexAttribArray(2);
 }
 
 
