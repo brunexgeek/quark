@@ -84,7 +84,7 @@ Matrix4f Camera::lookAt(
 }
 
 
-void Camera::update( bool globalOnly )
+void Camera::update()
 {
 #if 0
 	auto ppp = glm::lookAt(

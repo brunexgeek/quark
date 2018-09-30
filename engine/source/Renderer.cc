@@ -9,7 +9,6 @@
 #include <fstream>
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <engine/Renderer.hh>
 #include <engine/Camera.hh>
@@ -91,7 +90,7 @@ void Renderer::refresh()
 	uint64_t delta = Timer::getTime() - lastDraw;
 	//std::cout << "Frame time: " << delta << std::endl;
 	if(delta < frameTime)
-		SDL_Delay( frameTime - delta );
+		SDL_Delay( (uint32_t) (frameTime - delta) );
 	lastDraw = (uint32_t) Timer::getTime();;
 }
 

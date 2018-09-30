@@ -238,12 +238,12 @@ Vector3<T>& Vector3<T>::rotate( T angle, Vector3<T> axis )
     return *this;*/
     angle = V3_DEGREE_TO_RAD(angle);
     #undef V3_DEGREE_TO_RAD
-    const T sinAngle = sin(-angle);
-    const T cosAngle = cos(-angle);
+    const T sinAngle = (T) std::sin(-angle);
+    const T cosAngle = (T) std::cos(-angle);
 
-    *this = Vector3f::cross(*this, (axis * sinAngle)) +        //Rotation on local X
-        (*this * cosAngle) +                     //Rotation on local Z
-        axis * Vector3f::cross(*this, axis * (1 - cosAngle)); //Rotation on local Y
+    *this = Vector3f::cross(*this, (axis * sinAngle)) +       // X axis
+        (*this * cosAngle) +                                  // Z axis
+        axis * Vector3f::cross(*this, axis * (1 - cosAngle)); // Y axis
     return *this;
 }
 
@@ -255,6 +255,9 @@ Vector3<T>& Vector3<T>::rotate( T angle, Vector3<T> axis )
 #include <iostream>
 #include <iomanip>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+
 static std::ostream &operator << ( std::ostream &out, const Vector3f &value )
 {
 	out << value.x << ' '
@@ -262,6 +265,8 @@ static std::ostream &operator << ( std::ostream &out, const Vector3f &value )
         << value.z;
     return out;
 }
+
+#pragma GCC diagnostic pop
 
 #endif
 

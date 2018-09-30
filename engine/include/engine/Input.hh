@@ -6,8 +6,6 @@
 #include <stdint.h>
 
 
-class Window;
-
 class Input
 {
 	public:
@@ -20,6 +18,9 @@ class Input
 			MOUSE_WHEEL_DOWN = 5
 		};
 
+		/**
+		 * Based on SDL table
+		 */
 		enum
 		{
 				KEY_UNKNOWN = 0,
@@ -377,24 +378,25 @@ class Input
 
 		~Input();
 
-		bool isKeyDown(int keyCode) const         { return keyboard[keyCode] != 0; }
-		bool isKeyUp(int keyCode) const           { return keyboard[keyCode] == 0; }
-		bool isMouseDown(int keyCode) const       { return mouseButton[keyCode] != 0; }
-		bool isMouseUp(int keyCode) const         { return mouseButton[keyCode] == 0; }
-		const Vector2i& getMousePosition() const  { return mousePosition; }
-		const Vector2i& getMouseDelta() const     { return mouseDelta; }
-		bool isMouseMoved() const                 { return mouseDelta.x != 0 || mouseDelta.y != 0; }
+		bool isKeyDown(int keyCode) const                  { return keyboard[keyCode] != 0; }
+		bool isKeyUp(int keyCode) const                    { return keyboard[keyCode] == 0; }
+		bool isMouseDown(int keyCode) const                { return mouseButton[keyCode] != 0; }
+		bool isMouseUp(int keyCode) const                  { return mouseButton[keyCode] == 0; }
+		const Vector2i& getMousePosition() const           { return mousePosition; }
+		const Vector2i& getMouseDelta() const              { return mouseDelta; }
+		bool isMouseMoved() const                          { return mouseDelta.x != 0 || mouseDelta.y != 0; }
 
-		void grabCursor(bool value);
-		bool isCursorGrabbed() const;
-
-		void setMousePosition(const Vector2f& pos) const;
 		inline void setKey(int keyCode, bool value)        { keyboard[keyCode] = (uint8_t) value; }
 		inline void setMouseButton(int button, bool value) { mouseButton[button] = (uint8_t) value; }
 		inline void setMouseX(int value, int rel = 0)      { mousePosition.x = value; mouseDelta.x = rel; }
 		inline void setMouseY(int value, int rel = 0)      { mousePosition.x = value; mouseDelta.y = rel; }
+		inline void setMousePosition(const Vector2i &pos ) { setMouseX(pos.x); setMouseY(pos.y); }
+
+		void grabCursor(bool value);
+		bool isCursorGrabbed() const;
 
 		void update();
+
 	private:
 		uint8_t keyboard[NUM_KEYS];
 		bool mouseButton[NUM_MOUSEBUTTONS];

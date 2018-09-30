@@ -177,6 +177,10 @@ typedef Matrix<float, 16> Matrix4f;
 #if 1
 
 #include <iostream>
+#include <iomanip>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 template <typename T, int DIM>
 static std::ostream &operator << ( std::ostream &out, const Matrix<T,DIM> &value )
@@ -188,6 +192,8 @@ static std::ostream &operator << ( std::ostream &out, const Matrix<T,DIM> &value
             << std::setw(11) << value[y][3] << std::endl;
     return out;
 }
+
+#pragma GCC diagnostic pop
 
 #endif
 

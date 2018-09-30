@@ -112,7 +112,7 @@ class Renderer
 		uint32_t width;
 		uint32_t height;
 		SDL_Window *window;
-		uint32_t frameTime;
+		uint64_t frameTime;
 		void *context;
 		uint32_t vertexArrayID;
 		uint32_t lastDraw;

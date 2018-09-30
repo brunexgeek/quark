@@ -63,12 +63,6 @@ bool Input::isCursorGrabbed() const
 	return SDL_GetRelativeMouseMode() != 0;
 }
 
-void Input::setMousePosition(const Vector2f& pos) const
-{
-	//SDL_WarpMouseInWindow(m_window->GetSDLWindow(), (int)pos.GetX(), (int)pos.GetY());
-//	SDLSetMousePosition((int)pos.GetX(), (int)pos.GetY());
-}
-
 
 void Input::update()
 {

@@ -45,7 +45,7 @@ class Game : public Application
                 object[i] = new Object(*mesh);
                 //object[i]->getTransform().rotate({90, 0, 0});
                 object[i]->getTransform().scale({30, 30, 30});
-                object[i]->getTransform().translate(Vector3f(i * 40, 0, 0));
+                object[i]->getTransform().translate(Vector3f( (float)i * 40.0F, 0.0F, 0.0F));
                 object[i]->getTransform().update();
             }
         }
@@ -72,7 +72,7 @@ class Game : public Application
                 dir.normalize();
                 if (input.isKeyDown(Input::KEY_S)) dir = -dir;
                 //std::cout << "Step of " << dir << std::endl;
-                camera.move(dir, .3);
+                camera.move(dir, .3F);
                 //std::cout << "Player: " << camera.getPosition().x << " x " << camera.getPosition().z << std::endl;
                 light.setPosition(camera.getPosition());
             }
@@ -81,15 +81,14 @@ class Game : public Application
             {
                 Camera &camera = getRenderer().getCamera();
                 Vector3f dir = Vector3f(0.0F, .2F, 0.0F);
-                camera.move(dir, .3);
+                camera.move(dir, .3F);
                 light.setPosition(camera.getPosition());
             }
             else
             if (input.isKeyDown(Input::KEY_Z))
             {
                 Camera &camera = getRenderer().getCamera();
-                Vector3f dir = Vector3f(0.0F, -.2F, 0.0F);
-                camera.move(camera.leftSide(), .3);
+                camera.move(camera.leftSide(), .3F);
                 light.setPosition(camera.getPosition());
             }
 
@@ -97,7 +96,7 @@ class Game : public Application
             {
                 #if 1
                 Camera &camera = getRenderer().getCamera();
-                camera.move(camera.leftSide(), .3);
+                camera.move(camera.leftSide(), .3F);
                 light.setPosition(camera.getPosition());
                 #else
                 turnDegree += 1.5F;
@@ -114,7 +113,7 @@ class Game : public Application
             {
                 #if 1
                 Camera &camera = getRenderer().getCamera();
-                camera.move(camera.rightSide(), .3);
+                camera.move(camera.rightSide(), .3F);
                 light.setPosition(camera.getPosition());
                 #else
                 turnDegree -= 1.5F;
@@ -136,8 +135,8 @@ class Game : public Application
                 if (delta.x > 0) displace.x = -AMOUNT;
                 if (delta.y < 0) displace.y = -AMOUNT;
                 if (delta.y > 0) displace.y = AMOUNT;*/
-                displace.x = delta.x * -AMOUNT;
-                displace.y = delta.y * AMOUNT;
+                displace.x = (float) delta.x * -AMOUNT;
+                displace.y = (float) delta.y * AMOUNT;
                 Camera &camera = getRenderer().getCamera();
 
                 angles.x += displace.y;
@@ -167,28 +166,8 @@ class Game : public Application
 
 int main( int argc, char **argv )
 {
-    Matrix4f mat1;
-    Matrix4f mat2;
-
-    for (int y = 0, c = 1; y < 4; ++y)
-    {
-        mat1[y][0] = c++;
-        mat2[y][0] = c++ + y;
-        mat1[y][1] = c++;
-        mat2[y][1] = c++ + y;
-        mat1[y][2] = c++;
-        mat2[y][2] = c++ + y;
-        mat1[y][3] = c++;
-        mat2[y][3] = c++ + y;
-    }
-
-    std::cout << "mat1 = \n" << mat1;
-    std::cout << "mat2 = \n" << mat2;
-
-    Matrix4f mat3 = mat1 * mat2;
-    std::cout << "mat3 = \n" << mat3;
-
-    //return 0;
+    (void) argc;
+    (void) argv;
 
     //Level *level = Level::load("maps/sample.png");
     //if (level == nullptr) return 1;

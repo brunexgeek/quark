@@ -62,7 +62,7 @@ struct WavefrontObject
         // remove line control characters from the end
         size_t len = strlen(ptr);
         if (len == 0) return nullptr;
-        for (int i = len - 1; i >= 0 && ptr[i] <= ' '; --i) ptr[i] = 0;
+        for (size_t i = len - 1; i >= 0 && ptr[i] <= ' '; --i) ptr[i] = 0;
 
 //std::cout << "Line: '" << ptr << "'" << std::endl;
         if (*ptr == 0 || *ptr == '#') return nullptr;
@@ -140,9 +140,9 @@ struct WavefrontObject
 			else
 			if (content[0] == "Kd" && content.size() == 4 && material != NULL)
 			{
-				material->colorDiffuse.x = atof(content[1].c_str());
-				material->colorDiffuse.y = atof(content[2].c_str());
-				material->colorDiffuse.z = atof(content[3].c_str());
+				material->colorDiffuse.x = (float) atof(content[1].c_str());
+				material->colorDiffuse.y = (float) atof(content[2].c_str());
+				material->colorDiffuse.z = (float) atof(content[3].c_str());
 			}
 		}
 	}
@@ -157,9 +157,9 @@ struct WavefrontObject
 		Vector3u current = { 0, 0, 0 };
 		switch (values.size())
 		{
-			case 3: current.z = atoi(values[2].c_str());
-			case 2: current.y = atoi(values[1].c_str());
-			case 1: current.x = atoi(values[0].c_str());
+			case 3: current.z = (uint32_t) atoi(values[2].c_str());
+			case 2: current.y = (uint32_t) atoi(values[1].c_str());
+			case 1: current.x = (uint32_t) atoi(values[0].c_str());
 			default: break;
 		}
 //std::cout << "    Vector: '" << current.x << ", " << current.y << ", " << current.z << "'" << std::endl;

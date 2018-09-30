@@ -2,9 +2,6 @@
 #define ENGINE_LIGHT_HH
 
 
-#include <glm/gtc/matrix_transform.hpp>
-
-
 class Light
 {
 	public:
@@ -29,7 +26,7 @@ class Light
 			//std::cout << "Light " << this << " moved to [x: " << position.x << ", y: " << position.y << ", z: " << position.z << "]\n";
 		}
 
-		void rotateZ(
+		/*void rotateZ(
 			float degree )
 		{
 			glm::mat4 rotationMat;
@@ -38,7 +35,7 @@ class Light
 			position.x = temp.x;
 			position.y = temp.y;
 			position.z = temp.z;
-		}
+		}*/
 
 	protected:
 		Vector3f position;

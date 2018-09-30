@@ -5,8 +5,6 @@
 #include <engine/Vector3.hh>
 #include <engine/Matrix4.hh>
 #include <engine/Transform.hh>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 
 class Camera
@@ -29,12 +27,6 @@ class Camera
 		const Matrix4f &getMatrix() const { return matrix_; }
 
 		const Matrix4f &getGlobalMatrix() const { return globalMatrix_; }
-
-		void rotateTarget(
-			const Vector3f &angles );
-
-		void rotateCamera(
-			const Vector3f &angles );
 
 		void move(
 			const Vector3f &direction,
@@ -62,7 +54,6 @@ class Camera
 		Matrix4f globalMatrix_;
 		float fov_;
 		float aspect_;
-		//Transform transform_;
 
 		void initProjection(
 			float fov,
@@ -75,11 +66,7 @@ class Camera
 			const Vector3f &target,
 			const Vector3f &up );
 
-		static void rotatePoint(
-			Vector3f &object,
-			const Vector3f &angles );
-
-		void update( bool globalOnly = true );
+		void update();
 };
 
 

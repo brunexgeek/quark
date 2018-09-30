@@ -96,18 +96,9 @@ void Transform::update()
     }
 
     // translation
-#if 1
     matrix_[{0,3}] = position_.x;
     matrix_[{1,3}] = position_.y;
     matrix_[{2,3}] = position_.z;
-#else
-    Matrix4f trans({
-            1, 0, 0, position_.x,
-            0, 1, 0, position_.y,
-            0, 0, 1, position_.z,
-            0, 0, 0,           1 });
-    matrix_ *= trans;
-#endif
     changed_ = false;
 
     #undef CCOS
@@ -133,7 +124,8 @@ const Matrix4f &Transform::getMatrix()
 void Transform::reset()
 {
     matrix_ = Matrix4f::identity();
-    position_.x = position_.y = position_.z = 0.0F;
+    position_ = angles_ = Vector3f();
+    scales_ = Vector3f(1.0F, 1.0F, 1.0F);
     changed_ = false;
 }
 
