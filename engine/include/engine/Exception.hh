@@ -77,12 +77,12 @@ class Exception : public std::exception
 		/**
 		 * @brief Returns the line number where the exception was thrown.
 		 */
-		const uint32_t getLine() const throw();
+		uint32_t getLine() const throw();
 
 		/**
 		 * @brief Returns the name of the function which called the @c Exception constructor.
 		 */
-		 const string &getFunction() const throw();;
+		 const string &getFunction() const throw();
 
 		/**
 		 * @brief Returns a datailed error message.

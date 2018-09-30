@@ -23,6 +23,7 @@ Material::~Material()
 Material::Material(
 	const Material& object )
 {
+	(void) object;
 	throw EXCEPTION(ERR_INVALID_ARGUMENT, 0, "Copy constructor can not be invoked");
 }
 

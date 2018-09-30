@@ -92,7 +92,7 @@ void Renderer::refresh()
 	//std::cout << "Frame time: " << delta << std::endl;
 	if(delta < frameTime)
 		SDL_Delay( frameTime - delta );
-	lastDraw = Timer::getTime();;
+	lastDraw = (uint32_t) Timer::getTime();;
 }
 
 

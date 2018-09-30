@@ -6,7 +6,7 @@
 #include <engine/Matrix4.hh>
 
 
-#define DEGREE_TO_RAD(x) ( (x) * (M_PI / 180) )
+#define DEGREE_TO_RAD(x) ( (float) ((x) * ( (float)M_PI / 180.0F)) )
 
 
 class Transform

@@ -25,6 +25,7 @@ class Game : public Application
         Light &light;
         Object *object;
         float turnDegree = 0;
+        Vector3f angles = { 0, 0, 0 };
 
         Game( Renderer &renderer, Light &light) : Application(renderer), light(light)
         {
@@ -62,7 +63,7 @@ class Game : public Application
             if (input.isKeyDown(Input::KEY_S) || input.isKeyDown(Input::KEY_W))
             {
                 Camera &camera = getRenderer().getCamera();
-                Vector3f dir = (camera.getTarget() - camera.getPosition());
+                Vector3f dir = (camera.frontSide() - camera.getPosition());
                 dir.normalize() / .3F;
                 if (input.isKeyDown(Input::KEY_S)) dir = -dir;
                 std::cout << "Step of " << dir << std::endl;
@@ -74,7 +75,7 @@ class Game : public Application
             if (input.isKeyDown(Input::KEY_Q))
             {
                 Camera &camera = getRenderer().getCamera();
-                Vector3f dir = Vector3f(0, .2, 0);
+                Vector3f dir = Vector3f(0.0F, .2F, 0.0F);
                 camera.translate(dir);
                 light.setPosition(camera.getPosition());
             }
@@ -82,7 +83,7 @@ class Game : public Application
             if (input.isKeyDown(Input::KEY_Z))
             {
                 Camera &camera = getRenderer().getCamera();
-                Vector3f dir = Vector3f(0, -.2, 0);
+                Vector3f dir = Vector3f(0.0F, -.2F, 0.0F);
                 camera.translate(dir);
                 light.setPosition(camera.getPosition());
             }
@@ -105,14 +106,25 @@ class Game : public Application
 
             if (input.isMouseMoved())
             {
-                static const float AMOUNT = 1.5F;
+                static const float AMOUNT = 0.2F;
                 Vector2i delta = input.getMouseDelta();
                 Vector3f displace(0);
-                if (delta.x < 0) displace.y = AMOUNT;
-                if (delta.x > 0) displace.y = -AMOUNT;
+                /*if (delta.x < 0) displace.x = AMOUNT;
+                if (delta.x > 0) displace.x = -AMOUNT;
+                if (delta.y < 0) displace.y = -AMOUNT;
+                if (delta.y > 0) displace.y = AMOUNT;*/
+                displace.x = delta.x * -AMOUNT;
+                displace.y = delta.y * AMOUNT;
                 Camera &camera = getRenderer().getCamera();
-                camera.rotateTarget(displace);
-                //std::cout << "Rotating target" << std::endl;
+
+                angles.x += displace.y;
+                if (angles.x < 0) angles.x = 259;
+                if (angles.x >= 260) angles.x = 0;
+                //camera.rotateTarget(displace);
+                std::cout << "From " << camera.frontSide() << std::endl;
+                camera.pan(displace.x);
+                camera.tilt(displace.y);
+                std::cout << "  To " << camera.frontSide() << std::endl;
             }
         }
 
@@ -147,10 +159,20 @@ int main( int argc, char **argv )
 
     return 0;*/
 
-    Level *level = Level::load("maps/sample.png");
-    if (level == nullptr) return 1;
+    //Level *level = Level::load("maps/sample.png");
+    //if (level == nullptr) return 1;
 
-    Camera camera(Vector3f(0, 0, -10), Vector3f(0, 0, 0), 50.0F, Camera::AR_16x9);
+    Camera camera(Vector3f(0, 0, 0), Vector3f(0, 1, 0), Vector3f(0, 0, 1), 50.0F, Camera::AR_16x9);
+    std::cout << "Front" << camera.frontSide() << std::endl;
+    std::cout << "Top" << camera.upSide() << std::endl;
+    std::cout << "Left" << camera.leftSide() << std::endl;
+    std::cout << "Right" << camera.rightSide() << std::endl;
+
+    Vector3f dir = camera.frontSide();
+    dir.rotate(10, Vector3f(0, 0, 1));
+    std::cout << "Rotated " << dir << std::endl;
+
+    //return 0;
     Light light(Vector3f(0, 0, 10));
     Renderer renderer(camera, light, 1280, 720);
 

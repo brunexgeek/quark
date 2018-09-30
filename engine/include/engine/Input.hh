@@ -377,13 +377,13 @@ class Input
 
 		~Input();
 
-		constexpr bool isKeyDown(int keyCode) const         { return keyboard[keyCode] != 0; }
-		constexpr bool isKeyUp(int keyCode) const           { return keyboard[keyCode] == 0; }
-		constexpr bool isMouseDown(int keyCode) const       { return mouseButton[keyCode] != 0; }
-		constexpr bool isMouseUp(int keyCode) const         { return mouseButton[keyCode] == 0; }
-		constexpr const Vector2i& getMousePosition() const  { return mousePosition; }
-		constexpr const Vector2i& getMouseDelta() const     { return mouseDelta; }
-		constexpr bool isMouseMoved() const                 { return mouseDelta.x != 0 || mouseDelta.y != 0; }
+		bool isKeyDown(int keyCode) const         { return keyboard[keyCode] != 0; }
+		bool isKeyUp(int keyCode) const           { return keyboard[keyCode] == 0; }
+		bool isMouseDown(int keyCode) const       { return mouseButton[keyCode] != 0; }
+		bool isMouseUp(int keyCode) const         { return mouseButton[keyCode] == 0; }
+		const Vector2i& getMousePosition() const  { return mousePosition; }
+		const Vector2i& getMouseDelta() const     { return mouseDelta; }
+		bool isMouseMoved() const                 { return mouseDelta.x != 0 || mouseDelta.y != 0; }
 
 		void grabCursor(bool value);
 		bool isCursorGrabbed() const;

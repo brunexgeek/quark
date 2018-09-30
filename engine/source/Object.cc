@@ -25,8 +25,9 @@ Object::Object(
 
 
 Object::Object(
-	const Object &object ) : lastUpdate(0), mesh(object.mesh),
-		position(object.position), dimension(object.dimension)
+	const Object &object ) : position(object.position), dimension(object.dimension),
+		lastUpdate(0), mesh(object.mesh)
+
 {
 	// nothing to do
 }

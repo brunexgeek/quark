@@ -16,19 +16,18 @@ class Camera
 
 		Camera(
 			const Vector3f &position,
+			const Vector3f &up,
 			const Vector3f &target,
 			float fov = 66.0F,
 			float aspect = AR_4x3 );
 
 		virtual ~Camera();
 
-		constexpr const Vector3f &getPosition() const { return position_; }
+		const Vector3f &getPosition() const { return position_; }
 
-		constexpr const Vector3f &getTarget() const { return target_; }
+		const Matrix4f &getMatrix() const { return matrix_; }
 
-		constexpr const Matrix4f &getMatrix() const { return matrix_; }
-
-		constexpr const Matrix4f &getGlobalMatrix() const { return globalMatrix_; }
+		const Matrix4f &getGlobalMatrix() const { return globalMatrix_; }
 
 		void rotateTarget(
 			const Vector3f &angles );
@@ -39,9 +38,22 @@ class Camera
 		void translate(
 			Vector3f inc );
 
+		Vector3f leftSide() const;
+
+		Vector3f rightSide() const;
+
+		const Vector3f &upSide() const { return up_; };
+
+		const Vector3f &frontSide() const { return front_; };
+
+		void tilt( float angle );
+
+		void pan( float angle );
+
 	protected:
 		Vector3f position_;
-		Vector3f target_;
+		Vector3f up_;
+		Vector3f front_;
 		Vector3f angles_;
 		Matrix4f matrix_;
 		Matrix4f projection_;

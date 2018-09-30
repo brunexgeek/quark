@@ -91,9 +91,11 @@ void Mesh::populate(
 
 
 Vector3f *Mesh::computeNormal(
-	const Vector3f *vetices,
+	const Vector3f *vertices,
 	uint32_t count ) const
 {
+	(void) vertices;
+	(void) count;
 	// TODO: implement this!
 	return NULL;
 }

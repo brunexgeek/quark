@@ -81,17 +81,17 @@ class Mesh
 
 		~Mesh();
 
-		constexpr uint32_t getVertexHandle() const { return vertexHandle_; }
+		uint32_t getVertexHandle() const { return vertexHandle_; }
 
-		constexpr uint32_t getNormalHandle() const { return normalHandle_; }
+		uint32_t getNormalHandle() const { return normalHandle_; }
 
-		constexpr uint32_t getFaceIndexHandle() const { return faceHandle_; }
+		uint32_t getFaceIndexHandle() const { return faceHandle_; }
 
-		constexpr uint32_t getColorId() const;
+		uint32_t getColorId() const;
 
-		constexpr uint32_t getVertexCount() const { return vertexCount_; }
+		uint32_t getVertexCount() const { return vertexCount_; }
 
-		constexpr uint32_t getFaceCount() const { return faceCount_; }
+		uint32_t getFaceCount() const { return faceCount_; }
 
 		void setVertex(
 			const Vector3f *vertex,

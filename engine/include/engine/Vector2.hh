@@ -11,7 +11,7 @@ struct Vector2
         x = y = 0;
     }
 
-    Vector2( const T &value )
+    explicit Vector2( const T &value )
     {
         x = y = value;
     }

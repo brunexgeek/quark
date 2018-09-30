@@ -90,7 +90,7 @@ const std::string &Exception::getFileName() const throw()
 }
 
 
-const uint32_t Exception::getLine() const throw()
+uint32_t Exception::getLine() const throw()
 {
 	return lineNumber;
 }
