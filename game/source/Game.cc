@@ -18,13 +18,6 @@ static const Vector3f colors[] = { {1, 1, 1}, {1, 0, 1}, {0, 1, 1} };
 static const Vector3f normals[]  = { {1, 1, 1}, {1, 1, 1}, {1, 1, 1} };
 
 
-std::ostream &operator<<( std::ostream &out, const Vector3f &object )
-{
-    out << "[x: " << object.x << ", y: " << object.y << ", z: " << object.z << "]";
-    return out;
-}
-
-
 class Game : public Application
 {
     public:
@@ -138,6 +131,22 @@ class Game : public Application
 
 int main( int argc, char **argv )
 {
+    /*Matrix4f mat;
+
+    std::cout << mat;
+
+    for (int y = 0, c = 0; y < 4; ++y)
+    {
+        mat[y][0] = c++;
+        mat[y][1] = c++;
+        mat[y][2] = c++;
+        mat[y][3] = c++;
+    }
+
+    std::cout << mat;
+
+    return 0;*/
+
     Level *level = Level::load("maps/sample.png");
     if (level == nullptr) return 1;
 

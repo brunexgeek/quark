@@ -290,17 +290,6 @@ struct WavefrontObject
 };
 
 
-std::ostream &operator << (
-	std::ostream &out,
-	const Vector3f &value )
-{
-	out << value.x << ' '
-		<< value.y << ' '
-		<< value.z;
-	return out;
-}
-
-
 #define WRITE_U32(out, value) do { uint32_t u32_temp_value = (uint32_t)value; (out).write( (char*) &u32_temp_value, sizeof(uint32_t)); } while(false)
 #define WRITE_U8P(out, ptr, size) do { (out).write( (char*) ptr, size); } while(false)
 #define WRITE_V3F(out, vec3f) \

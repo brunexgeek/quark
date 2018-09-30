@@ -12,30 +12,36 @@
 template <typename T>
 struct Row4
 {
-    T *row;
+    T *row1;
+    const T *row2;
 
-    Row4( T *row ) : row(row)
+    Row4( T *row ) : row1(row), row2(nullptr)
+    {
+    }
+
+    Row4( const T *row ) : row1(nullptr), row2(row)
     {
     }
 
     inline T& operator[]( const size_t index )
     {
-        index = index % 4;
-        return row[index];
+        return row1[index % 4];
     }
 
     inline T operator[]( const size_t index ) const
     {
-        index = index % 4;
-        return row[index];
+        if (row1)
+            return row1[index % 4];
+        else
+            return row2[index % 4];
     }
 };
 
 
 struct MatrixIndex
 {
-    size_t x;
     size_t y;
+    size_t x;
 };
 
 
@@ -88,7 +94,7 @@ struct Matrix4
         return temp *= value;
     }
 
-    Matrix4<T> operator*( const Matrix4 &obj )
+    Matrix4<T> operator*( const Matrix4 &obj ) const
     {
         Matrix4 temp;
 
@@ -113,12 +119,12 @@ struct Matrix4
         for (size_t i = 0; i < ELEMENTS; ++i) data[i] *= value;
     }
 
-    T operator[]( const size_t y )
+    Row4<T> operator[]( const size_t y )
     {
         return Row4<T>(data + y * 4);
     }
 
-    T operator[]( const size_t y ) const
+    const Row4<T> operator[]( const size_t y ) const
     {
         return Row4<T>(data + y * 4);
     }
@@ -133,10 +139,52 @@ struct Matrix4
         return *(data + index.y * 4 + index.x);
     }
 
+    Matrix4<T> transpose() const
+    {
+        Matrix4<T> result;
+
+        result[{0,0}] = (*this)[{0,0}];
+        result[{1,0}] = (*this)[{0,1}];
+        result[{2,0}] = (*this)[{0,2}];
+        result[{3,0}] = (*this)[{0,3}];
+
+        result[{0,1}] = (*this)[{1,0}];
+        result[{1,1}] = (*this)[{1,1}];
+        result[{2,1}] = (*this)[{1,2}];
+        result[{3,1}] = (*this)[{1,3}];
+
+        result[{0,2}] = (*this)[{2,0}];
+        result[{1,2}] = (*this)[{2,1}];
+        result[{2,2}] = (*this)[{2,2}];
+        result[{3,2}] = (*this)[{2,3}];
+
+        result[{0,3}] = (*this)[{3,0}];
+        result[{1,3}] = (*this)[{3,1}];
+        result[{2,3}] = (*this)[{3,2}];
+        result[{3,3}] = (*this)[{3,3}];
+
+        return result;
+    }
+
 };
 
 
 typedef Matrix4<float> Matrix4f;
+
+
+#if 1
+
+#include <iostream>
+
+template <typename T>
+static std::ostream &operator << ( std::ostream &out, const Matrix4<T> &value )
+{
+    for (size_t y = 0; y < 4; ++y)
+        out << value[y][0] << ", " << value[y][1] << ", " << value[y][2] << ", " << value[y][3] << std::endl;;
+    return out;
+}
+
+#endif
 
 
 #endif // ENGINE_MATRIX4_HH

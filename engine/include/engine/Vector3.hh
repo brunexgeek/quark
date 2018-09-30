@@ -118,12 +118,17 @@ struct Vector3
         return obj / obj.length();
     }
 
-    static Vector3<T> dot( const Vector3<T> &a, const Vector3<T> &b )
+    static Vector3<T> cross( const Vector3<T> &a, const Vector3<T> &b )
     {
         return Vector3<T>(
 			a.y * b.z - b.y * a.z,
 			a.z * b.x - b.z * a.x,
 			a.x * b.y - b.x * a.y);
+    }
+
+    static T dot( const Vector3<T> &a, const Vector3<T> &b )
+    {
+        return a.x * b.x + a.y * b.y + a.z * b.z;
     }
 
     T length() const
@@ -133,8 +138,19 @@ struct Vector3
 
 };
 
-
 typedef Vector3<float> Vector3f;
 typedef Vector3<uint32_t> Vector3u;
+
+#if 1
+
+#include <iostream>
+
+static std::ostream &operator << ( std::ostream &out, const Vector3f &value )
+{
+	out << value.x << ' ' << value.y << ' ' << value.z;
+    return out;
+}
+
+#endif
 
 #endif // ENGINE_VECTOR3_HH

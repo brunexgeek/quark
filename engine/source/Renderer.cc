@@ -17,6 +17,7 @@
 #include <engine/Shader.hh>
 #include <engine/Timer.hh>
 
+#define SEND_TRANSPOSED GL_FALSE
 
 using std::string;
 using std::ostream;
@@ -53,7 +54,7 @@ Renderer::Renderer(
 	// accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 	// set the clear color and blank the screen
-	glClearColor(.1, .1, .1, 1);
+	glClearColor(.5, .0, .5, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// enables face culling
 	glEnable(GL_CULL_FACE);
@@ -176,7 +177,7 @@ void Renderer::draw(
 	//glBindTexture(GL_TEXTURE_2D, texture.getTexture());
 	glUniform1i(textureId, 0);
 	// creates the model matrix
-	glUniformMatrix4fv(mId, 1, GL_FALSE, (const GLfloat*) transform.getMatrix().data);
+	glUniformMatrix4fv(mId, 1, SEND_TRANSPOSED, (const GLfloat*) transform.getMatrix().data);
 
 	// draw the triangles
 #if 0
@@ -196,7 +197,7 @@ void Renderer::draw(
 	//glDisableVertexAttribArray(2);
 }
 
-
+/*
 void Renderer::drawLine(
 	float from0,
 	float from1,
@@ -276,7 +277,7 @@ void Renderer::drawLine(
 	glDeleteBuffers(1, &vHandle);
 	glDeleteBuffers(1, &cHandle);
 	glDeleteBuffers(1, &nHandle);
-}
+}*/
 
 
 void Renderer::setActiveShader(
@@ -306,8 +307,8 @@ void Renderer::prepare()
 
 	// Send our transformation to the currently bound shader,
 	// in the "MVP" uniform
-	glUniformMatrix4fv(gId, 1, GL_FALSE, &camera_.getGlobalMatrix()[0][0]);
-	glUniformMatrix4fv(vId, 1, GL_FALSE, &camera_.getMatrix()[0][0]);
+	glUniformMatrix4fv(gId, 1, SEND_TRANSPOSED, camera_.getGlobalMatrix().data);
+	glUniformMatrix4fv(vId, 1, SEND_TRANSPOSED, camera_.getMatrix().data);
 }
 
 
@@ -317,6 +318,7 @@ ostream &operator<<(
 {
 	out << "    OpenGL: " << glGetString(GL_VERSION) << std::endl;
 	out << "Resolution: " << renderer.width << 'x' << renderer.height << std::endl;
+	return out;
 }
 
 

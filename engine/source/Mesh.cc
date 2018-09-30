@@ -206,13 +206,3 @@ void Mesh::loadBinary(
 	std::cout << "      Faces: " << faceIndex.size() << std::endl;
 	std::cout << "   Vertices: " << vertices.size() << std::endl;
 }
-
-
-std::ostream &operator << (
-	std::ostream &out,
-	const Vector3f &Vector3f )
-{
-	out << "[ x = " << Vector3f.x
-		<< "; y = " << Vector3f.y
-		<< "; y = " << Vector3f.y << "]";
-}

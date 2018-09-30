@@ -3,6 +3,7 @@
 
 
 #include <engine/Vector3.hh>
+#include <engine/Matrix4.hh>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -21,13 +22,13 @@ class Camera
 
 		virtual ~Camera();
 
-		const Vector3f &getPosition() const;
+		constexpr const Vector3f &getPosition() const { return position_; }
 
-		const Vector3f &getTarget() const;
+		constexpr const Vector3f &getTarget() const { return target_; }
 
-		const glm::mat4 &getMatrix() const;
+		constexpr const Matrix4f &getMatrix() const { return matrix_; }
 
-		const glm::mat4 &getGlobalMatrix() const;
+		constexpr const Matrix4f &getGlobalMatrix() const { return globalMatrix_; }
 
 		void rotateTarget(
 			const Vector3f &angles );
@@ -42,11 +43,22 @@ class Camera
 		Vector3f position_;
 		Vector3f target_;
 		Vector3f angles_;
-		glm::mat4 matrix_;
-		glm::mat4 projection_;
-		glm::mat4 globalMatrix_;
+		Matrix4f matrix_;
+		Matrix4f projection_;
+		Matrix4f globalMatrix_;
 		float fov_;
 		float aspect_;
+
+		void initProjection(
+			float fov,
+			float aspect,
+			float zNear,
+			float zFar );
+
+		static Matrix4f lookAt(
+			const Vector3f &position,
+			const Vector3f &target,
+			const Vector3f &up );
 
 		static void rotatePoint(
 			Vector3f &object,

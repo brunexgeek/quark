@@ -1,6 +1,7 @@
 #include <engine/Camera.hh>
 #include <algorithm>
 #include <iostream>
+#include <engine/Transform.hh>
 
 
 Camera::Camera(
@@ -12,7 +13,8 @@ Camera::Camera(
 {
 	//target_ = glm::normalize(target_) + position_;
 	// projection matrix with display range of 0.1 unit <-> 1000 units
-	projection_ = glm::perspective(glm::radians(fov), aspect, 0.01f, 1000.0f);
+	//projection_ = glm::perspective(glm::radians(fov), aspect, 0.01f, 1000.0f);
+	initProjection(fov, aspect, 0.01F, 1000.0F);
 	update();
 }
 
@@ -23,37 +25,83 @@ Camera::~Camera()
 }
 
 
-const Vector3f &Camera::getPosition() const
+void Camera::initProjection(
+	float fov,
+	float aspect,
+	float zNear,
+	float zFar )
 {
-	return position_;
+	float tanHalfFovy = std::tan(DEGREE_TO_RAD(fov) / 2.0F);
+
+	projection_[{0,0}] = 1.0F / (aspect * tanHalfFovy);
+	projection_[{1,1}] = 1.0F / (tanHalfFovy);
+	projection_[{2,2}] = - (zFar + zNear) / (zFar - zNear);
+	projection_[{2,3}] = - 1.0F;
+	projection_[{3,2}] = - (2.0F * zFar * zNear) / (zFar - zNear);
 }
 
 
-const Vector3f &Camera::getTarget() const
+Matrix4f Camera::lookAt(
+	const Vector3f &position,
+	const Vector3f &target,
+	const Vector3f &up )
 {
-	return target_;
-}
+	Vector3f f(Vector3f::normalize(target - position));
+	Vector3f s(Vector3f::normalize(Vector3f::cross(f, up)));
+	Vector3f u(Vector3f::cross(s, f));
 
+	Matrix4f result = Matrix4f::identity();
+	result[{0,0}] = s.x;
+	result[{1,0}] = s.y;
+	result[{2,0}] = s.z;
+	result[{0,1}] = u.x;
+	result[{1,1}] = u.y;
+	result[{2,1}] = u.z;
+	result[{0,2}] =-f.x;
+	result[{1,2}] =-f.y;
+	result[{2,2}] =-f.z;
+	result[{3,0}] =-Vector3f::dot(s, position);
+	result[{3,1}] =-Vector3f::dot(u, position);
+	result[{3,2}] = Vector3f::dot(f, position);
 
-const glm::mat4 &Camera::getMatrix() const
-{
-	return matrix_;
-}
-
-
-const glm::mat4 &Camera::getGlobalMatrix() const
-{
-	return globalMatrix_;
+	return result;
 }
 
 
 void Camera::update()
 {
-	matrix_ = glm::lookAt(
+#if 0
+	auto ppp = glm::lookAt(
 		glm::vec3(position_.x, position_.y, position_.z),
 		glm::vec3(target_.x, target_.y, target_.z),
-		glm::vec3(0,1,0) ); // head is up (set to 0,-1,0 to look upside-down)
-	globalMatrix_ = projection_ * matrix_;
+		glm::vec3(0,1,0) );
+	auto proj = glm::perspective( (float)DEGREE_TO_RAD(50.0F), Camera::AR_16x9, 0.01F, 1000.0F);
+	auto glob = proj * ppp;
+#endif
+	matrix_ = lookAt(position_, target_, Vector3f(0.0F, 1.0F, 0.0F));
+	//std::cout << &projection_ << std::endl;
+	//std::cout << &matrix_ << std::endl;
+
+	// FIXME: matrix multiplication operator is reversing its operands
+	//globalMatrix_ = projection_ * matrix_;
+	globalMatrix_ = matrix_ * projection_;
+#if 0
+	std::cout << "Projection\n";
+	for (size_t y = 0; y < 4; ++y)
+        std::cout << proj[y][0] << ", " << proj[y][1] << ", " << proj[y][2] << ", " << proj[y][3] << std::endl;
+	std::cout << projection_ << std::endl;
+
+	std::cout << "Matrix\n";
+	for (size_t y = 0; y < 4; ++y)
+        std::cout << ppp[y][0] << ", " << ppp[y][1] << ", " << ppp[y][2] << ", " << ppp[y][3] << std::endl;
+	std::cout << matrix_ << std::endl;
+
+	std::cout << "Global\n";
+	for (size_t y = 0; y < 4; ++y)
+        std::cout << glob[y][0] << ", " << glob[y][1] << ", " << glob[y][2] << ", " << glob[y][3] << std::endl;
+	std::cout << globalMatrix_ << std::endl;
+
+#endif
 }
 
 

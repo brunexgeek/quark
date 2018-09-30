@@ -27,7 +27,6 @@ void Transform::moveTo( const Vector3f &value )
 
 void Transform::update()
 {
-    #define DEGREE_TO_RAD(x) ( (x) * (M_PI / 180) )
     #define CCOS(x)  ((float) std::cos( DEGREE_TO_RAD(x) ))
     #define CSIN(x)  ((float) std::sin( DEGREE_TO_RAD(x) ))
 
@@ -85,7 +84,6 @@ void Transform::update()
 
     #undef CCOS
     #undef CSIN
-    #undef DEGREE_TO_RAD
 }
 
 
