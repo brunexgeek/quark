@@ -36,7 +36,7 @@ class Game : public Application
             /*std::ifstream julietteBin("juliette.blend.bin");
 	        julietteMesh = new Mesh(julietteBin);
 	        julietteBin.close();*/
-            std::ifstream input("untitled.mesher");
+            std::ifstream input("natasha.mesher");
 	        mesh = new Mesh(input);
 	        input.close();
 

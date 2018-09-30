@@ -1,9 +1,14 @@
 #ifndef ENGINE_VECTOR2_HH
 #define ENGINE_VECTOR2_HH
 
+
+#include <stdlib.h>
+
+
 template<typename T>
 struct Vector2
 {
+    static const size_t SIZE = sizeof(T) * 2;
     T x, y;
 
     Vector2()

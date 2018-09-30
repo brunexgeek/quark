@@ -16,10 +16,11 @@ using std::istream;
 Mesh::Mesh(
 	const std::vector<Vector3f> &vertex,
 	const std::vector<Vector3f> &normal,
+	const std::vector<Vector2f> &uv,
 	const std::vector<Vector3u> &faces,
 	bool isDynamic )
 {
-	populate(vertex, normal, faces, isDynamic);
+	populate(vertex, normal, uv, faces, isDynamic);
 }
 
 
@@ -28,22 +29,25 @@ Mesh::Mesh(
 	bool isDynamic )
 {
 	std::vector<Vector3f> vertex;
+	std::vector<Vector2f> uv;
 	std::vector<Vector3f> normal;
 	std::vector<Vector3u> faceIndex;
 
 	glGenBuffers(1, &vertexHandle_);
+	glGenBuffers(1, &uvHandle_);
 	glGenBuffers(1, &normalHandle_);
 	glGenBuffers(1, &faceHandle_);
 
 	//loadBin(in, Vector3f, color, normal, count);
-	loadBinary(in, vertex, normal, faceIndex);
-	populate(vertex, normal, faceIndex, isDynamic);
+	loadBinary(in, vertex, normal, uv, faceIndex);
+	populate(vertex, normal, uv, faceIndex, isDynamic);
 }
 
 
 Mesh::Mesh( Mesh &&obj )
 {
 	vertexHandle_ = obj.vertexHandle_;
+	uvHandle_     = obj.uvHandle_;
 	normalHandle_ = obj.normalHandle_;
 	faceHandle_   = obj.faceHandle_;
 	vertexCount_  = obj.vertexCount_;
@@ -56,15 +60,16 @@ Mesh::Mesh( Mesh &&obj )
 Mesh::~Mesh()
 {
 	glDeleteBuffers(1, &vertexHandle_);
+	glDeleteBuffers(1, &uvHandle_);
 	glDeleteBuffers(1, &normalHandle_);
 	glDeleteBuffers(1, &faceHandle_);
-	//glDeleteBuffers(1, &colorsId_);
 }
 
 
 void Mesh::populate(
 	const std::vector<Vector3f> &vertices,
 	const std::vector<Vector3f> &normals,
+	const std::vector<Vector2f> &uvs,
 	const std::vector<Vector3u> &faces,
 	bool isDynamic )
 {
@@ -84,20 +89,16 @@ void Mesh::populate(
 	glBufferData(GL_ARRAY_BUFFER, Vector3f::SIZE * normals.size(), normals.data(),
 		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
+	// texture coordinate buffer
+	glGenBuffers(1, &uvHandle_);
+	glBindBuffer(GL_ARRAY_BUFFER, uvHandle_);
+	glBufferData(GL_ARRAY_BUFFER, Vector2f::SIZE * uvs.size(), uvs.data(),
+		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+
 	// vertex/normal indices
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faceHandle_);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, Vector3u::SIZE * faces.size(), faces.data(),
 		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-
-	/*glGenBuffers(1, &colorId);
-	glBindBuffer(GL_ARRAY_BUFFER, colorId);
-	glBufferData(GL_ARRAY_BUFFER, Vector3f::SIZE * count, color,
-		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);*/
-
-	/*glGenBuffers(1, &normalId);
-	glBindBuffer(GL_ARRAY_BUFFER, normalId);
-	glBufferData(GL_ARRAY_BUFFER, Vector3f::SIZE * normal.size(), normal.data(),
-		(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);*/
 }
 
 
@@ -161,10 +162,12 @@ void Mesh::setData(
 */
 
 
+// FIXME: validate header/section signature
 void Mesh::loadBinary(
 	std::istream &in,
 	std::vector<Vector3f> &vertices,
 	std::vector<Vector3f> &normals,
+	std::vector<Vector2f> &uvs,
 	std::vector<Vector3u> &faceIndex )
 {
 	if (in.good() == false)
@@ -192,6 +195,17 @@ void Mesh::loadBinary(
 	{
 		normals.resize(total);
 		in.read( (char*) normals.data(), total * sizeof(Vector3f) );
+	}
+
+	// reads the texture coordinates
+	in.seekg(0x00000004, in.cur);
+	in.read( (char*) &total, sizeof(uint32_t) );
+	if (in.good() == false || total > 0x7FFFF)
+		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
+	if (total > 0)
+	{
+		uvs.resize(total);
+		in.read( (char*) uvs.data(), total * sizeof(Vector2f) );
 	}
 
 	// reads the face indexes

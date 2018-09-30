@@ -9,63 +9,6 @@
 #include <vector>
 
 
-#pragma pack(push, 4)
-
-/*struct Vertex
-{
-	float x;
-	float y;
-	float z;
-
-	Vertex() : x(0), y(0), z(0)
-	{
-		// nothing to do
-	}
-
-	Vertex(
-		float x,
-		float y,
-		float z ) : x(x), y(y), z(z)
-	{
-		// nothing to do
-	}
-
-	Vertex &fromGLM(
-		const glm::vec3 &vector )
-	{
-		x = vector.x;
-		y = vector.y;
-		z = vector.z;
-		return *this;
-	}
-};*/
-
-
-//typedef Vertex Vector3;
-
-
-std::ostream &operator << (
-	std::ostream &out,
-	const Vector3f &vertex );
-
-/*
-struct Vector2
-{
-	float u;
-	float v;
-
-	Vector2 &fromGLM(
-		const glm::vec2 &vector )
-	{
-		u = vector.x;
-		v = vector.y;
-		return *this;
-	}
-};*/
-
-#pragma pack(pop)
-
-
 class Mesh
 {
 	public:
@@ -76,6 +19,7 @@ class Mesh
 		Mesh(
 			const std::vector<Vector3f> &vertex,
 			const std::vector<Vector3f> &normal,
+			const std::vector<Vector2f> &uvs,
 			const std::vector<Vector3u> &faces,
 			bool isDynamic = false );
 
@@ -97,26 +41,11 @@ class Mesh
 
 		uint32_t getFaceCount() const { return faceCount_; }
 
-		/*void setVertex(
-			const Vector3f *vertex,
-			uint32_t begin,
-			uint32_t size );
-
-		void setNormal(
-			const Vector3f *normal,
-			uint32_t begin,
-			uint32_t size );
-
-		void setColor(
-			const Vector3f *color,
-			uint32_t begin,
-			uint32_t size );*/
-
 	protected:
 		uint32_t vertexHandle_;
+		uint32_t uvHandle_;
 		uint32_t normalHandle_;
 		uint32_t faceHandle_;
-		//uint32_t colorsId_;
 		uint32_t vertexCount_;
 		uint32_t normalCount_;
 		uint32_t faceCount_;
@@ -125,6 +54,7 @@ class Mesh
 		void populate(
 			const std::vector<Vector3f> &vertex,
 			const std::vector<Vector3f> &normal,
+			const std::vector<Vector2f> &uvs,
 			const std::vector<Vector3u> &faces,
 			bool isDynamic );
 
@@ -155,6 +85,7 @@ class Mesh
 			std::istream &in,
 			std::vector<Vector3f> &vertices,
 			std::vector<Vector3f> &normals,
+			std::vector<Vector2f> &uvs,
 			std::vector<Vector3u> &faceIndex );
 };
 

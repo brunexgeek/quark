@@ -1,4 +1,4 @@
-file(GLOB TOOL_SOURCE "main.cc")
+file(GLOB TOOL_SOURCE "*.cc")
 
 include_directories("../../engine/include")
 
