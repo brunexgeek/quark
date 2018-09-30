@@ -253,10 +253,13 @@ Vector3<T>& Vector3<T>::rotate( T angle, Vector3<T> axis )
 #if 1
 
 #include <iostream>
+#include <iomanip>
 
 static std::ostream &operator << ( std::ostream &out, const Vector3f &value )
 {
-	out << value.x << ' ' << value.y << ' ' << value.z;
+	out << value.x << ' '
+        << value.y << ' '
+        << value.z;
     return out;
 }
 

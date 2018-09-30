@@ -21,9 +21,10 @@ static const Vector3f normals[]  = { {1, 1, 1}, {1, 1, 1}, {1, 1, 1} };
 class Game : public Application
 {
     public:
+        static const int NUM_OBJECTS = 3;
         Mesh *mesh;
         Light &light;
-        Object *object;
+        Object *object[NUM_OBJECTS];
         float turnDegree = 0;
         Vector3f angles = { 0, 0, 0 };
 
@@ -39,15 +40,19 @@ class Game : public Application
 	        mesh = new Mesh(input);
 	        input.close();
 
-            object = new Object(*mesh);
-            //object->getTransform().rotate({90, 0, 0});
-            object->getTransform().scale({30, 30, 30});
-            object->getTransform().update();
+            for (size_t i = 0; i < NUM_OBJECTS; ++i)
+            {
+                object[i] = new Object(*mesh);
+                //object[i]->getTransform().rotate({90, 0, 0});
+                object[i]->getTransform().scale({30, 30, 30});
+                object[i]->getTransform().translate(Vector3f(i * 40, 0, 0));
+                object[i]->getTransform().update();
+            }
         }
 
         ~Game()
         {
-            delete object;
+            for (size_t i = 0; i < NUM_OBJECTS; ++i) delete object[i];
             delete mesh;
         }
 
@@ -64,11 +69,11 @@ class Game : public Application
             {
                 Camera &camera = getRenderer().getCamera();
                 Vector3f dir = (camera.frontSide() - camera.getPosition());
-                dir.normalize() / .3F;
+                dir.normalize();
                 if (input.isKeyDown(Input::KEY_S)) dir = -dir;
-                std::cout << "Step of " << dir << std::endl;
-                camera.translate(dir);
-                std::cout << "Player: " << camera.getPosition().x << " x " << camera.getPosition().z << std::endl;
+                //std::cout << "Step of " << dir << std::endl;
+                camera.move(dir, .3);
+                //std::cout << "Player: " << camera.getPosition().x << " x " << camera.getPosition().z << std::endl;
                 light.setPosition(camera.getPosition());
             }
 
@@ -76,7 +81,7 @@ class Game : public Application
             {
                 Camera &camera = getRenderer().getCamera();
                 Vector3f dir = Vector3f(0.0F, .2F, 0.0F);
-                camera.translate(dir);
+                camera.move(dir, .3);
                 light.setPosition(camera.getPosition());
             }
             else
@@ -84,24 +89,42 @@ class Game : public Application
             {
                 Camera &camera = getRenderer().getCamera();
                 Vector3f dir = Vector3f(0.0F, -.2F, 0.0F);
-                camera.translate(dir);
+                camera.move(camera.leftSide(), .3);
                 light.setPosition(camera.getPosition());
             }
 
             if (input.isKeyDown(Input::KEY_D))
             {
+                #if 1
+                Camera &camera = getRenderer().getCamera();
+                camera.move(camera.leftSide(), .3);
+                light.setPosition(camera.getPosition());
+                #else
                 turnDegree += 1.5F;
                 if (turnDegree > 359) turnDegree = 0;
-                object->getTransform().rotate(NAN, turnDegree, NAN);
-                object->getTransform().update();
+                for (size_t i = 0; i < NUM_OBJECTS; ++i)
+                {
+                    object[i]->getTransform().rotate(NAN, turnDegree, NAN);
+                    object[i]->getTransform().update();
+                }
+                #endif
             }
             else
             if (input.isKeyDown(Input::KEY_A))
             {
+                #if 1
+                Camera &camera = getRenderer().getCamera();
+                camera.move(camera.rightSide(), .3);
+                light.setPosition(camera.getPosition());
+                #else
                 turnDegree -= 1.5F;
                 if (turnDegree < 0) turnDegree = 359;
-                object->getTransform().rotate(NAN, turnDegree, NAN);
-                object->getTransform().update();
+                for (size_t i = 0; i < NUM_OBJECTS; ++i)
+                {
+                    object[i]->getTransform().rotate(NAN, turnDegree, NAN);
+                    object[i]->getTransform().update();
+                }
+                #endif
             }
 
             if (input.isMouseMoved())
@@ -121,10 +144,10 @@ class Game : public Application
                 if (angles.x < 0) angles.x = 259;
                 if (angles.x >= 260) angles.x = 0;
                 //camera.rotateTarget(displace);
-                std::cout << "From " << camera.frontSide() << std::endl;
+                //std::cout << "From " << camera.frontSide() << std::endl;
                 camera.pan(displace.x);
                 camera.tilt(displace.y);
-                std::cout << "  To " << camera.frontSide() << std::endl;
+                //std::cout << "  To " << camera.frontSide() << std::endl;
             }
         }
 
@@ -135,7 +158,8 @@ class Game : public Application
         void draw()
         {
             //getRenderer().draw(object->getMesh(), object->getTransform());
-            object->draw(getRenderer());
+            for (size_t i = 0; i < NUM_OBJECTS; ++i)
+                object[i]->draw(getRenderer());
         }
 
 };
@@ -143,21 +167,28 @@ class Game : public Application
 
 int main( int argc, char **argv )
 {
-    /*Matrix4f mat;
+    Matrix4f mat1;
+    Matrix4f mat2;
 
-    std::cout << mat;
-
-    for (int y = 0, c = 0; y < 4; ++y)
+    for (int y = 0, c = 1; y < 4; ++y)
     {
-        mat[y][0] = c++;
-        mat[y][1] = c++;
-        mat[y][2] = c++;
-        mat[y][3] = c++;
+        mat1[y][0] = c++;
+        mat2[y][0] = c++ + y;
+        mat1[y][1] = c++;
+        mat2[y][1] = c++ + y;
+        mat1[y][2] = c++;
+        mat2[y][2] = c++ + y;
+        mat1[y][3] = c++;
+        mat2[y][3] = c++ + y;
     }
 
-    std::cout << mat;
+    std::cout << "mat1 = \n" << mat1;
+    std::cout << "mat2 = \n" << mat2;
 
-    return 0;*/
+    Matrix4f mat3 = mat1 * mat2;
+    std::cout << "mat3 = \n" << mat3;
+
+    //return 0;
 
     //Level *level = Level::load("maps/sample.png");
     //if (level == nullptr) return 1;

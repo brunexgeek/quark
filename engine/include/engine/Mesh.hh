@@ -74,10 +74,14 @@ class Mesh
 			bool isDynamic = false );
 
 		Mesh(
-			std::vector<Vector3f> &vertex,
-			std::vector<Vector3f> &normal,
-			std::vector<Vector3u> &faces,
+			const std::vector<Vector3f> &vertex,
+			const std::vector<Vector3f> &normal,
+			const std::vector<Vector3u> &faces,
 			bool isDynamic = false );
+
+		Mesh( const Mesh &obj ) = delete;
+
+		Mesh( Mesh &&obj );
 
 		~Mesh();
 
@@ -93,7 +97,7 @@ class Mesh
 
 		uint32_t getFaceCount() const { return faceCount_; }
 
-		void setVertex(
+		/*void setVertex(
 			const Vector3f *vertex,
 			uint32_t begin,
 			uint32_t size );
@@ -106,7 +110,7 @@ class Mesh
 		void setColor(
 			const Vector3f *color,
 			uint32_t begin,
-			uint32_t size );
+			uint32_t size );*/
 
 	protected:
 		uint32_t vertexHandle_;
@@ -119,9 +123,9 @@ class Mesh
 		bool isDynamic;
 
 		void populate(
-			std::vector<Vector3f> &vertex,
-			std::vector<Vector3f> &normal,
-			std::vector<Vector3u> &faces,
+			const std::vector<Vector3f> &vertex,
+			const std::vector<Vector3f> &normal,
+			const std::vector<Vector3u> &faces,
 			bool isDynamic );
 
 		Vector3f *computeNormal(

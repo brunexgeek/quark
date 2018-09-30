@@ -12,16 +12,15 @@ using std::string;
 using std::vector;
 using std::istream;
 
-/*
-Mesh::Mesh(
-	std::vector<Vector3f> &vertex,
-	std::vector<Vector3f> &normal,
-	std::vector<Vector3u> &faces,
-	bool isDynamic ) : faceCount_(0), , isDynamic(isDynamic)
-{
-	//initialize(vertex, normal, faces, isDynamic);
-}*/
 
+Mesh::Mesh(
+	const std::vector<Vector3f> &vertex,
+	const std::vector<Vector3f> &normal,
+	const std::vector<Vector3u> &faces,
+	bool isDynamic )
+{
+	populate(vertex, normal, faces, isDynamic);
+}
 
 
 Mesh::Mesh(
@@ -42,6 +41,18 @@ Mesh::Mesh(
 }
 
 
+Mesh::Mesh( Mesh &&obj )
+{
+	vertexHandle_ = obj.vertexHandle_;
+	normalHandle_ = obj.normalHandle_;
+	faceHandle_   = obj.faceHandle_;
+	vertexCount_  = obj.vertexCount_;
+	normalCount_  = obj.normalCount_;
+	faceCount_    = obj.faceCount_;
+	isDynamic     = obj.isDynamic;
+}
+
+
 Mesh::~Mesh()
 {
 	glDeleteBuffers(1, &vertexHandle_);
@@ -52,9 +63,9 @@ Mesh::~Mesh()
 
 
 void Mesh::populate(
-	std::vector<Vector3f> &vertices,
-	std::vector<Vector3f> &normals,
-	std::vector<Vector3u> &faces,
+	const std::vector<Vector3f> &vertices,
+	const std::vector<Vector3f> &normals,
+	const std::vector<Vector3u> &faces,
 	bool isDynamic )
 {
 	this->vertexCount_ = (uint32_t) vertices.size();

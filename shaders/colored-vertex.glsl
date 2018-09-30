@@ -27,8 +27,12 @@ uniform vec3 LightPositionWS;
 void main()
 {
 	// Output position of the vertex, in clip space : MVP * position
+	#if 1
 	gl_Position = G * M * vec4(VertexPositionMS,1);
-	//gl_Position = vec4(VertexPositionMS,1);
+	#else
+	mat4 tmp = mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(.5, 0, 0, 1));
+	gl_Position = V * tmp * vec4(VertexPositionMS,1);
+	#endif
 
 	// Position of the vertex, in worldspace : M * position
 	Position_worldspace = (M * vec4(VertexPositionMS,1)).xyz;

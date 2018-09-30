@@ -17,6 +17,16 @@ Camera::Camera(
 	// projection matrix with display range of 0.1 unit <-> 1000 units
 	//projection_ = glm::perspective(glm::radians(fov), aspect, 0.01f, 1000.0f);
 	initProjection(fov, aspect, 0.01F, 1000.0F);
+#if 0
+	//transform_ = lookAt(position_, front_, Vector3f(0.0F, 1.0F, 0.0F));
+	transform_ = lookAt(Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F), Vector3f(0.0F, 1.0F, 0.0F));
+	transform_.translate(Vector3f(0.0F, 0.0F, 5.0F));
+	transform_.update();
+	std::cout << "Wrong:" << transform_.getMatrix() << std::endl;
+	transform_ = lookAt(Vector3f(0.0F, 0.0F, 5.0F), Vector3f(0.0F, 0.0F, 1.0F), Vector3f(0.0F, 1.0F, 0.0F));
+	std::cout << "Right:" << transform_.getMatrix() << std::endl;
+	globalMatrix_ = transform_.getMatrix() * projection_;
+#endif
 	update();
 }
 
@@ -35,11 +45,14 @@ void Camera::initProjection(
 {
 	float tanHalfFovy = std::tan(DEGREE_TO_RAD(fov) / 2.0F);
 
+	// line oriented matrix
 	projection_[{0,0}] = 1.0F / (aspect * tanHalfFovy);
 	projection_[{1,1}] = 1.0F / (tanHalfFovy);
 	projection_[{2,2}] = - (zFar + zNear) / (zFar - zNear);
-	projection_[{2,3}] = - 1.0F;
-	projection_[{3,2}] = - (2.0F * zFar * zNear) / (zFar - zNear);
+	//projection_[{2,3}] = - 1.0F;
+	//projection_[{3,2}] = - (2.0F * zFar * zNear) / (zFar - zNear);
+	projection_[{3,2}] = - 1.0F;
+	projection_[{2,3}] = - (2.0F * zFar * zNear) / (zFar - zNear);
 }
 
 
@@ -52,7 +65,8 @@ Matrix4f Camera::lookAt(
 	Vector3f s(Vector3f::normalize(Vector3f::cross(f, up)));
 	Vector3f u(Vector3f::cross(s, f));
 
-	Matrix4f result = Matrix4f::identity();
+	// line oriented matrix
+	Matrix4f result(Matrix4f::identity());
 	result[{0,0}] = s.x;
 	result[{1,0}] = s.y;
 	result[{2,0}] = s.z;
@@ -70,7 +84,7 @@ Matrix4f Camera::lookAt(
 }
 
 
-void Camera::update()
+void Camera::update( bool globalOnly )
 {
 #if 0
 	auto ppp = glm::lookAt(
@@ -80,13 +94,15 @@ void Camera::update()
 	auto proj = glm::perspective( (float)DEGREE_TO_RAD(50.0F), Camera::AR_16x9, 0.01F, 1000.0F);
 	auto glob = proj * ppp;
 #endif
-	matrix_ = lookAt(position_, front_, Vector3f(0.0F, 1.0F, 0.0F));
+	matrix_ = lookAt(position_, front_, Vector3f(0.0F, 1.0F, 0.0F)).transpose();
 	//std::cout << &projection_ << std::endl;
 	//std::cout << &matrix_ << std::endl;
 
 	// FIXME: matrix multiplication operator is reversing its operands
-	//globalMatrix_ = projection_ * matrix_;
-	globalMatrix_ = matrix_ * projection_;
+	globalMatrix_ = projection_ * matrix_;
+
+
+	//globalMatrix_ = transform_.getMatrix() * projection_;
 #if 0
 	std::cout << "Projection\n";
 	for (size_t y = 0; y < 4; ++y)
@@ -107,15 +123,16 @@ void Camera::update()
 }
 
 
-void Camera::translate(
-	Vector3f inc )
+void Camera::move(
+	const Vector3f &direction,
+	float step )
 {
-	position_ += inc;
+	position_ += direction * step;
 	//front_ += inc;
 	update();
 }
 
-
+/*
 void Camera::rotatePoint(
 	Vector3f &object,
 	const Vector3f &angles )
@@ -156,23 +173,22 @@ void Camera::rotateCamera(
 	rotatePoint(position_, angles);
 	position_ += front_;
 	update();
-}
+}*/
 
 Vector3f Camera::leftSide() const
 {
-	return Vector3f::cross(up_, front_).normalize();
+	return Vector3f::cross(front_, up_).normalize();
 }
 
 Vector3f Camera::rightSide() const
 {
-	return Vector3f::cross(front_, up_).normalize();
+	return Vector3f::cross(up_, front_).normalize();
 }
 
 void Camera::pan( float angle )
 {
 	Vector3f axis = Vector3f::cross(up_, front_).normalize();
 	front_.rotate(angle, up_);//.normalize();
-	std::cout << "Front " << front_ << std::endl;
 	up_ = Vector3f::cross(front_, axis).normalize();
 	update();
 }

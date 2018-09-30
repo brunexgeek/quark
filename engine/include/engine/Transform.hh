@@ -20,13 +20,17 @@ class Transform
 
         Transform();
 
+        explicit Transform( const Matrix4f &matrix );
+
+        Transform( const Transform &obj );
+
         void translate( const Vector3f &value );
 
         void moveTo( const Vector3f &position );
 
         const Matrix4f &getMatrix();
 
-        const Matrix4f &getMatrix() const;
+        Matrix4f getMatrix() const;
 
         void rotate( float x, float y, float z );
 
@@ -34,11 +38,15 @@ class Transform
 
         void scale( float x, float y, float z );
 
-        void scale( const Vector3f &angles );
+        void scale( const Vector3f &scales );
 
         void reset();
 
         void update();
+
+        Transform& operator=( const Matrix4f &matrix );
+
+        Transform& operator=( const Transform &obj );
 
     private:
         Matrix4f matrix_;

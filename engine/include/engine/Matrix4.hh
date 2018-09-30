@@ -9,17 +9,17 @@
 #include <algorithm>
 
 
-template <typename T>
-struct Row4
+template <typename T, int DIM>
+struct Row
 {
     T *row1;
     const T *row2;
 
-    Row4( T *row ) : row1(row), row2(nullptr)
+    Row( T *row ) : row1(row), row2(nullptr)
     {
     }
 
-    Row4( const T *row ) : row1(nullptr), row2(row)
+    Row( const T *row ) : row1(nullptr), row2(row)
     {
     }
 
@@ -45,36 +45,35 @@ struct MatrixIndex
 };
 
 
-template <typename T>
-struct Matrix4
+template <typename T, int DIM>
+struct Matrix
 {
-    static const size_t ELEMENTS = 16;
-    T data[ELEMENTS];
+    T data[DIM];
 
-    Matrix4()
+    Matrix()
     {
         // IEEE-754 "zero" have all bits off
         memset(data, 0, sizeof(data));
     }
 
-    Matrix4( const Matrix4 &obj )
+    Matrix( const Matrix &obj )
     {
         memcpy(data, obj.data, sizeof(data));
     }
 
-    Matrix4( const T *array )
+    explicit Matrix( const T *array )
     {
         memcpy(data, array, sizeof(data));
     }
 
-    Matrix4( const std::initializer_list<T> &values )
+    Matrix( const std::initializer_list<T> &values )
     {
         std::copy(values.begin(), values.end(), data);
     }
 
-    static Matrix4<T> identity()
+    static Matrix<T, DIM> identity()
     {
-        Matrix4<T> temp;
+        Matrix<T,DIM> temp;
         temp.data[0] = (T) 1.0;
         temp.data[5] = (T) 1.0;
         temp.data[10] = (T) 1.0;
@@ -82,51 +81,54 @@ struct Matrix4
         return temp;
     }
 
-    Matrix4<T>& operator=( const Matrix4 &obj )
+    Matrix<T,DIM>& operator=( const Matrix &obj )
     {
         memcpy(data, obj.data, sizeof(data));
         return *this;
     }
 
-    Matrix4<T> operator*( const T value )
+    Matrix<T,DIM> operator*( const T value )
     {
-        Matrix4 temp(*this);
+        Matrix temp(*this);
         return temp *= value;
     }
 
-    Matrix4<T> operator*( const Matrix4 &obj ) const
+    Matrix<T,DIM> operator*( const Matrix &obj ) const
     {
-        Matrix4 temp;
+        Matrix temp;
+        const T *a = obj.data;
+        const T *b = this->data;
 
         for (unsigned j = 0; j < 4; j++)
         {
             unsigned j4 = j * 4;
-            temp.data[j4 + 0] = data[j4] * obj.data[0] + data[j4 + 1] * obj.data[0 + 4] + data[j4 + 2] * obj.data[0 + 8] + data[j4 + 3] * obj.data[0 + 12];
-            temp.data[j4 + 1] = data[j4] * obj.data[1] + data[j4 + 1] * obj.data[1 + 4] + data[j4 + 2] * obj.data[1 + 8] + data[j4 + 3] * obj.data[1 + 12];
-            temp.data[j4 + 2] = data[j4] * obj.data[2] + data[j4 + 1] * obj.data[2 + 4] + data[j4 + 2] * obj.data[2 + 8] + data[j4 + 3] * obj.data[2 + 12];
-            temp.data[j4 + 3] = data[j4] * obj.data[3] + data[j4 + 1] * obj.data[3 + 4] + data[j4 + 2] * obj.data[3 + 8] + data[j4 + 3] * obj.data[3 + 12];
+            temp.data[j4 + 0] = b[j4] * a[0] + b[j4 + 1] * a[0 + 4] + b[j4 + 2] * a[0 + 8] + b[j4 + 3] * a[0 + 12];
+            temp.data[j4 + 1] = b[j4] * a[1] + b[j4 + 1] * a[1 + 4] + b[j4 + 2] * a[1 + 8] + b[j4 + 3] * a[1 + 12];
+            temp.data[j4 + 2] = b[j4] * a[2] + b[j4 + 1] * a[2 + 4] + b[j4 + 2] * a[2 + 8] + b[j4 + 3] * a[2 + 12];
+            temp.data[j4 + 3] = b[j4] * a[3] + b[j4 + 1] * a[3 + 4] + b[j4 + 2] * a[3 + 8] + b[j4 + 3] * a[3 + 12];
         }
         return temp;
     }
 
-    Matrix4<T>& operator*=( const Matrix4 &obj )
+    Matrix<T,DIM>& operator*=( const Matrix &obj )
     {
         return (*this = this->operator*(obj));
     }
 
-    Matrix4<T>& operator*=( const T value )
+    Matrix<T,DIM>& operator*=( const T value )
     {
-        for (size_t i = 0; i < ELEMENTS; ++i) data[i] *= value;
+        for (size_t i = 0; i < DIM; ++i) data[i] *= value;
+        return *this;
     }
 
-    Row4<T> operator[]( const size_t y )
+    Row<T,DIM> operator[]( const size_t y )
     {
-        return Row4<T>(data + y * 4);
+        return Row<T,DIM>(data + y * 4);
     }
 
-    const Row4<T> operator[]( const size_t y ) const
+    const Row<T,DIM> operator[]( const size_t y ) const
     {
-        return Row4<T>(data + y * 4);
+        return Row<T,DIM>(data + y * 4);
     }
 
     inline T& operator[]( const MatrixIndex index )
@@ -139,9 +141,9 @@ struct Matrix4
         return *(data + index.y * 4 + index.x);
     }
 
-    Matrix4<T> transpose() const
+    Matrix<T,DIM> transpose() const
     {
-        Matrix4<T> result;
+        Matrix<T,DIM> result;
 
         result[{0,0}] = (*this)[{0,0}];
         result[{1,0}] = (*this)[{0,1}];
@@ -169,18 +171,21 @@ struct Matrix4
 };
 
 
-typedef Matrix4<float> Matrix4f;
+typedef Matrix<float, 16> Matrix4f;
 
 
 #if 1
 
 #include <iostream>
 
-template <typename T>
-static std::ostream &operator << ( std::ostream &out, const Matrix4<T> &value )
+template <typename T, int DIM>
+static std::ostream &operator << ( std::ostream &out, const Matrix<T,DIM> &value )
 {
     for (size_t y = 0; y < 4; ++y)
-        out << value[y][0] << ", " << value[y][1] << ", " << value[y][2] << ", " << value[y][3] << std::endl;;
+        out << std::setw(11) << value[y][0] << ", "
+            << std::setw(11) << value[y][1] << ", "
+            << std::setw(11) << value[y][2] << ", "
+            << std::setw(11) << value[y][3] << std::endl;
     return out;
 }
 

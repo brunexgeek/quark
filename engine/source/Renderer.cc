@@ -17,7 +17,7 @@
 #include <engine/Shader.hh>
 #include <engine/Timer.hh>
 
-#define SEND_TRANSPOSED GL_FALSE
+#define SEND_TRANSPOSED GL_TRUE
 
 using std::string;
 using std::ostream;

@@ -6,22 +6,42 @@
 #define IS_VALID_SCALE(x)  (!std::isnan(x) && (x) != 1 && (x) > 0 && !std::isinf(x))
 
 
-Transform::Transform()
+Transform::Transform() : changed_(false)
 {
     matrix_ = Matrix4f::identity();
     scales_ = { 1.0F, 1.0F, 1.0F };
 }
 
 
+Transform::Transform( const Matrix4f &matrix ) : changed_(false)
+{
+    matrix_ = matrix;
+    scales_ = { 1.0F, 1.0F, 1.0F };
+}
+
+
+Transform::Transform( const Transform &obj )
+{
+    matrix_ = obj.matrix_;
+    angles_ = obj.angles_;
+    scales_ = obj.scales_;
+    position_ = obj.position_;
+    changed_ = obj.changed_;
+    update();
+}
+
+
 void Transform::translate( const Vector3f &value )
 {
     position_ += value;
+    changed_ = true;
 }
 
 
 void Transform::moveTo( const Vector3f &value )
 {
     position_ = value;
+    changed_ = true;
 }
 
 
@@ -76,10 +96,18 @@ void Transform::update()
     }
 
     // translation
+#if 1
     matrix_[{0,3}] = position_.x;
     matrix_[{1,3}] = position_.y;
     matrix_[{2,3}] = position_.z;
-
+#else
+    Matrix4f trans({
+            1, 0, 0, position_.x,
+            0, 1, 0, position_.y,
+            0, 0, 1, position_.z,
+            0, 0, 0,           1 });
+    matrix_ *= trans;
+#endif
     changed_ = false;
 
     #undef CCOS
@@ -87,11 +115,13 @@ void Transform::update()
 }
 
 
-const Matrix4f &Transform::getMatrix() const
+Matrix4f Transform::getMatrix() const
 {
     // TODO: better exception here
-    if (changed_) throw 10;
-    return matrix_;
+    if (changed_)
+        return Transform(*this).getMatrix();
+    else
+        return matrix_;
 }
 
 const Matrix4f &Transform::getMatrix()
@@ -132,4 +162,18 @@ void Transform::scale( float x, float y, float z )
 void Transform::scale( const Vector3f &scales )
 {
     scale(scales.x, scales.y, scales.z);
+}
+
+
+Transform& Transform::operator=( const Matrix4f &matrix )
+{
+    matrix_ = matrix;
+    changed_ = false;
+    return *this;
+}
+
+
+Transform& Transform::operator=( const Transform &obj )
+{
+    return *this = obj.getMatrix();
 }
