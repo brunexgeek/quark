@@ -16,11 +16,19 @@
 
 
 Object::Object(
-	const Mesh &mesh ) : lastUpdate(0), mesh(mesh)
+	const Mesh &mesh ) : lastUpdate(0), mesh(mesh), texture_(nullptr)
 {
 	position.x = position.y = position.z = 0.0f;
 	// TODO: compute dimension using mesh information
 	dimension.x = dimension.y = dimension.z = 1.0f;
+}
+
+
+Object::Object(
+	const Mesh &mesh,
+	const Texture &texture ) : Object(mesh)
+{
+	texture_ = &texture;
 }
 
 
@@ -67,7 +75,10 @@ const Vector3f &Object::getDimension() const
 void Object::draw(
 	Renderer &renderer )
 {
-	renderer.draw(mesh, transform);
+	if (texture_ == nullptr)
+		renderer.draw(mesh, transform);
+	else
+		renderer.draw(mesh, *texture_, transform);
 }
 
 

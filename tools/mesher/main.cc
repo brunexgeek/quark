@@ -140,12 +140,14 @@ int main( int argc, char **argv )
 	std::cout << std::endl << "### Input file ###" << std::endl;
 	std::cout << "   Vertices: " << source.vertexCount << std::endl;
 	std::cout << "    Normals: " << source.normalCount << std::endl;
+	std::cout << "        UVs: " << source.uvCount << std::endl;
 	std::cout << "      Faces: " << source.faces.size() / 3 << std::endl;
 	std::cout << "  Materials: " << source.materialLibrary.size() << std::endl;
 
 	std::cout << std::endl << "### Output file ###" << std::endl;
 	std::cout << "   Vertices: " << source.faces.size() << std::endl;
 	std::cout << "    Normals: " << source.faces.size() << std::endl;
+	std::cout << "        UVs: " << source.faces.size() << std::endl;
 	std::cout << "      Faces: " << source.faces.size() / 3 << std::endl;
 	std::cout << "  Materials: " << source.materialLibrary.size() << std::endl;
 

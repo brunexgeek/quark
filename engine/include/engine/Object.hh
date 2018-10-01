@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <engine/Mesh.hh>
 #include <engine/Transform.hh>
+#include <engine/Texture.hh>
 
 
 class Renderer;
@@ -16,6 +17,10 @@ class Object
 	public:
 		Object(
 			const Mesh &mesh );
+
+		Object(
+			const Mesh &mesh,
+			const Texture &texture );
 
 		Object(
 			const Object &object );
@@ -44,6 +49,7 @@ class Object
 		uint64_t lastUpdate;
 		const Mesh &mesh;
 		Transform transform;
+		const Texture *texture_;
 };
 
 #endif /* ENGINE_OBJECT_HH_ */

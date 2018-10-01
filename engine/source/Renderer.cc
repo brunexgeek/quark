@@ -16,6 +16,7 @@
 #include <engine/Shader.hh>
 #include <engine/Timer.hh>
 
+
 #define SEND_TRANSPOSED GL_TRUE
 
 using std::string;
@@ -60,7 +61,7 @@ Renderer::Renderer(
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
 
-	glEnable(GL_BLEND);
+	//glEnable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
@@ -115,11 +116,29 @@ uint32_t Renderer::getHeight() const
 
 void Renderer::draw(
 	const Mesh &mesh,
-	//const Material &material,
+	const Texture &texture,
+	const Transform &transform )
+{
+	draw(mesh, &texture, transform);
+}
+
+
+void Renderer::draw(
+	const Mesh &mesh,
+	const Transform &transform )
+{
+	draw(mesh, nullptr, transform);
+}
+
+
+void Renderer::draw(
+	const Mesh &mesh,
+	const Texture *texture,
 	const Transform &transform )
 {
 	uint32_t vertexHandle = mesh.getVertexHandle();
 	uint32_t normalHandler = mesh.getNormalHandle();
+	uint32_t uvHandler = mesh.getUvHandle();
 	uint32_t faceIndexHandle  = mesh.getFaceIndexHandle();
 
 	// attribute buffer 0: vertices
@@ -146,19 +165,24 @@ void Renderer::draw(
 		NULL                              // array buffer offset
 	);
 
+	if (texture != nullptr)
+	{
+		// attribute buffer 2: UV
+		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ARRAY_BUFFER, uvHandler);
+		glVertexAttribPointer(
+			2,                  // attribute index
+			2,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			NULL                // array buffer offset
+		);
+		// activates the mesh texture
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture->getHandler());
+	}
 #if 0
-	// attribute buffer 1: UV or colors
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, colorId);
-	glVertexAttribPointer(
-		1,                  // attribute index
-		3,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		0,                  // stride
-		NULL                // array buffer offset
-	);
-
 	// attribute buffer 2: normals
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, normalId);
@@ -171,9 +195,7 @@ void Renderer::draw(
 		NULL                              // array buffer offset
 	);
 #endif
-	// activates the mesh texture
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, texture.getTexture());
+
 	glUniform1i(textureId, 0);
 	// creates the model matrix
 	glUniformMatrix4fv(mId, 1, SEND_TRANSPOSED, (const GLfloat*) transform.getMatrix().data);
@@ -191,9 +213,12 @@ void Renderer::draw(
 		(void*)0           // element array buffer offset
  	);
 #endif
+	if (texture != nullptr)
+	{
+		glDisableVertexAttribArray(2);
+	}
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(0);
-	//glDisableVertexAttribArray(2);
 }
 
 /*

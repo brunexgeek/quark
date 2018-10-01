@@ -30,9 +30,8 @@ class Mesh
 		~Mesh();
 
 		uint32_t getVertexHandle() const { return vertexHandle_; }
-
 		uint32_t getNormalHandle() const { return normalHandle_; }
-
+		uint32_t getUvHandle() const { return uvHandle_; }
 		uint32_t getFaceIndexHandle() const { return faceHandle_; }
 
 		uint32_t getColorId() const;

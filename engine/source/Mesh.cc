@@ -34,8 +34,8 @@ Mesh::Mesh(
 	std::vector<Vector3u> faceIndex;
 
 	glGenBuffers(1, &vertexHandle_);
-	glGenBuffers(1, &uvHandle_);
 	glGenBuffers(1, &normalHandle_);
+	glGenBuffers(1, &uvHandle_);
 	glGenBuffers(1, &faceHandle_);
 
 	//loadBin(in, Vector3f, color, normal, count);
@@ -60,8 +60,8 @@ Mesh::Mesh( Mesh &&obj )
 Mesh::~Mesh()
 {
 	glDeleteBuffers(1, &vertexHandle_);
-	glDeleteBuffers(1, &uvHandle_);
 	glDeleteBuffers(1, &normalHandle_);
+	glDeleteBuffers(1, &uvHandle_);
 	glDeleteBuffers(1, &faceHandle_);
 }
 

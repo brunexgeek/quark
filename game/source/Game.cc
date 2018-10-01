@@ -25,6 +25,7 @@ class Game : public Application
         Mesh *mesh;
         Light &light;
         Object *object[NUM_OBJECTS];
+        Texture *texture;
         float turnDegree = 0;
         Vector3f angles = { 0, 0, 0 };
 
@@ -36,13 +37,17 @@ class Game : public Application
             /*std::ifstream julietteBin("juliette.blend.bin");
 	        julietteMesh = new Mesh(julietteBin);
 	        julietteBin.close();*/
+            //std::ifstream input("cube.mesher");
             std::ifstream input("natasha.mesher");
 	        mesh = new Mesh(input);
 	        input.close();
 
+            //texture = new Texture(256, 256, "test.data");
+            texture = new Texture(256, 256, "natasha_body_d.data");
+
             for (size_t i = 0; i < NUM_OBJECTS; ++i)
             {
-                object[i] = new Object(*mesh);
+                object[i] = new Object(*mesh, *texture);
                 //object[i]->getTransform().rotate({90, 0, 0});
                 object[i]->getTransform().scale({30, 30, 30});
                 object[i]->getTransform().translate(Vector3f( (float)i * 40.0F, 0.0F, 0.0F));
@@ -172,6 +177,8 @@ int main( int argc, char **argv )
     //Level *level = Level::load("maps/sample.png");
     //if (level == nullptr) return 1;
 
+
+
     Camera camera(Vector3f(0, 0, 0), Vector3f(0, 1, 0), Vector3f(0, 0, 1), 50.0F, Camera::AR_16x9);
     std::cout << "Front" << camera.frontSide() << std::endl;
     std::cout << "Top" << camera.upSide() << std::endl;
@@ -186,11 +193,11 @@ int main( int argc, char **argv )
     Light light(Vector3f(0, 0, 10));
     Renderer renderer(camera, light, 1280, 720);
 
-    std::ifstream sf("./shaders/colored-vertex.glsl");
+    std::ifstream sf("./shaders/vertex.glsl");
     Shader vertex(ShaderType::SHADER_VERTEX, sf);
     sf.close();
 
-    sf.open("./shaders/colored-fragments.glsl");
+    sf.open("./shaders/fragments.glsl");
     Shader frags(ShaderType::SHADER_FRAGMENT, sf);
     sf.close();
 

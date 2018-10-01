@@ -13,6 +13,7 @@
 #include <vector>
 #include <stdint.h>
 #include <iostream>
+#include <engine/Texture.hh>
 //#include <glm/glm.hpp>
 
 #include <engine/Mesh.hh>
@@ -63,8 +64,8 @@ class Renderer
 
 		void draw(
 			const Mesh &mesh,
-			const Material &material,
-			const Vector3f &position );
+			const Texture &texture,
+			const Transform &transform );
 
 		void draw(
 			const Mesh &mesh,
@@ -131,6 +132,11 @@ class Renderer
 		//glm::mat4 globalMatrix;
 
 		Light &light;
+
+		void draw(
+			const Mesh &mesh,
+			const Texture *texture,
+			const Transform &transform );
 
 		//void updateCamera();
 };

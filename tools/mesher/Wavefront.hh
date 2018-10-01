@@ -60,6 +60,7 @@ struct WavefrontObject
 	//std::vector<Vector3u> faceIndex; // every element make a triangle
 	//std::vector<Vector3u> normalIndex; // every element make a triangle normal
 	uint32_t vertexCount;
+	uint32_t uvCount;
 	uint32_t normalCount;
 	std::unordered_map<std::string, WavefrontMaterial*> materialLibrary;
 	std::list<WavefrontVertex> faces;

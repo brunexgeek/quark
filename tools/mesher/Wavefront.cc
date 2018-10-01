@@ -108,9 +108,9 @@ static void parseWavefront(
         Vector3u second = object.getTriple(content[2]);
         Vector3u third  = object.getTriple(content[3]);
 
-        object.createEntry(ctx.indexCounter++, object.faces, ctx.vertices, first.x - 1,  ctx.uvs, first.y,  ctx.normals, first.z - 1);
-        object.createEntry(ctx.indexCounter++, object.faces, ctx.vertices, second.x - 1, ctx.uvs, second.y, ctx.normals, second.z - 1);
-        object.createEntry(ctx.indexCounter++, object.faces, ctx.vertices, third.x - 1,  ctx.uvs, third.y,  ctx.normals, third.z - 1);
+        object.createEntry(ctx.indexCounter++, object.faces, ctx.vertices, first.x - 1,  ctx.uvs, first.y - 1,  ctx.normals, first.z - 1);
+        object.createEntry(ctx.indexCounter++, object.faces, ctx.vertices, second.x - 1, ctx.uvs, second.y - 1, ctx.normals, second.z - 1);
+        object.createEntry(ctx.indexCounter++, object.faces, ctx.vertices, third.x - 1,  ctx.uvs, third.y - 1,  ctx.normals, third.z - 1);
 
         //faceIndex.push_back(Vector3u(first.x - 1, second.x - 1, third.x - 1));
         //normalIndex.push_back(Vector3u(first.z - 1, second.z - 1, third.z - 1));
@@ -254,6 +254,7 @@ WavefrontObject WavefrontObject::load(
     object.parseFile(fileName, parseWavefront, &context);
     object.vertexCount = context.vertices.size();
     object.normalCount = context.normals.size();
+    object.uvCount = context.uvs.size();
     return object;
 }
 
