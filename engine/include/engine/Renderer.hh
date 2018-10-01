@@ -18,13 +18,12 @@
 
 #include <engine/Mesh.hh>
 #include <engine/Light.hh>
+#include <engine/Camera.hh>
 #include <engine/Transform.hh>
 
 
-class Sprite;
 class Level;
 class Scene;
-class Material;
 class ShaderProgram;
 class Camera;
 

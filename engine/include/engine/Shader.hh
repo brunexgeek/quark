@@ -13,7 +13,7 @@ enum class ShaderType
 	SHADER_FRAGMENT
 };
 
-
+// TODO: create two specializations for colored and textured shaders
 class Shader
 {
 	public:

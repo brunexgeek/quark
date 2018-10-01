@@ -1,29 +1,47 @@
-#include <iostream>
-#include <SDL2/SDL.h>
-#include <GL/glew.h>
-
-#include <engine/Object.hh>
 #include <engine/Material.hh>
-#include <engine/Renderer.hh>
-#include <engine/Exception.hh>
 
 
-Material::Material()
+BasicMaterial::BasicMaterial(
+	Shader &shader,
+	const Texture &texture ) : Material(shader)
 {
-	// nothing to do
+	texture_ = &texture;
+	weights_ = Vector2f(1.0F, 0.0F).normalize();
+}
+
+BasicMaterial::BasicMaterial(
+	Shader &shader,
+	const Vector3f &color ) : Material(shader)
+{
+	color_ = color;
+	texture_ = nullptr;
+	weights_ = Vector2f(0.0F, 1.0F).normalize();
+}
+
+BasicMaterial::BasicMaterial(
+	Shader &shader,
+	const Texture &texture,
+	float textureWeight,
+	const Vector3f &color,
+	float colorWeight ) : Material(shader)
+{
+	texture_ = &texture;
+	color_   = color;
+	weights_ = Vector2f(textureWeight, colorWeight).normalize();
 }
 
 
-Material::~Material()
+BasicMaterial::BasicMaterial(
+	const BasicMaterial& object ) : Material(object.shader_)
 {
-	// nothing to do
+	texture_ = object.texture_;
+	color_   = object.color_;
+	weights_ = object.weights_;
 }
 
 
-Material::Material(
-	const Material& object )
+BasicMaterial::~BasicMaterial()
 {
-	(void) object;
-	throw EXCEPTION(ERR_INVALID_ARGUMENT, 0, "Copy constructor can not be invoked");
+	// nothing to do
 }
 

@@ -3,6 +3,7 @@
 
 
 #include <stdlib.h>
+#include <cmath>
 
 
 template<typename T>
@@ -55,7 +56,7 @@ struct Vector2
 
     T length() const
     {
-        return sqrt(x * x + y * y);
+        return (T) sqrt(x * x + y * y);
     }
 
     Vector2<T>& normalize()

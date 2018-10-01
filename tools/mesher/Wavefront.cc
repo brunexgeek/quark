@@ -63,9 +63,9 @@ static void parseWavefront(
     if (content[0] == "v" && (content.size() == 4 || content.size() == 5))
     {
         Vector3f vertex;
-        vertex.x = atof(content[1].c_str());
-        vertex.y = atof(content[2].c_str());
-        vertex.z = atof(content[3].c_str());
+        vertex.x = (float) atof(content[1].c_str());
+        vertex.y = (float) atof(content[2].c_str());
+        vertex.z = (float) atof(content[3].c_str());
         /*if (content.size() == 5)
             vertex.w = atof(content[4].c_str());
         else
@@ -86,9 +86,9 @@ static void parseWavefront(
     if (content[0] == "vn" && content.size() == 4)
     {
         Vector3f normal;
-        normal.x = atof(content[1].c_str());
-        normal.y = atof(content[2].c_str());
-        normal.z = atof(content[3].c_str());
+        normal.x = (float) atof(content[1].c_str());
+        normal.y = (float) atof(content[2].c_str());
+        normal.z = (float) atof(content[3].c_str());
         ctx.normals.push_back(normal);
     }
     else
@@ -96,8 +96,8 @@ static void parseWavefront(
     if (content[0] == "vt" && content.size() == 3)
     {
         Vector2f uv;
-        uv.x = atof(content[1].c_str());
-        uv.y = atof(content[2].c_str());
+        uv.x = (float) atof(content[1].c_str());
+        uv.y = (float) atof(content[2].c_str());
         ctx.uvs.push_back(uv);
     }
     else
@@ -137,7 +137,7 @@ char *WavefrontObject::cleanup( char *line )
     // remove line control characters from the end
     size_t len = strlen(ptr);
     if (len == 0) return nullptr;
-    for (size_t i = len - 1; i >= 0 && ptr[i] <= ' '; --i) ptr[i] = 0;
+    for (int i = (int) len - 1; i >= 0 && ptr[i] <= ' '; --i) ptr[i] = 0;
 
 //std::cout << "Line: '" << ptr << "'" << std::endl;
     if (*ptr == 0 || *ptr == '#') return nullptr;
@@ -205,7 +205,6 @@ void WavefrontObject::parseFile(
 
     char line[512];
     std::vector<std::string> content;
-    int currentMaterial = -1;
 
     while (in.good())
     {
@@ -237,8 +236,11 @@ Vector3u WavefrontObject::getTriple(
     switch (values.size())
     {
         case 3: current.z = (uint32_t) atoi(values[2].c_str());
+        /* fallthrough */
         case 2: current.y = (uint32_t) atoi(values[1].c_str());
+        /* fallthrough */
         case 1: current.x = (uint32_t) atoi(values[0].c_str());
+        /* fallthrough */
         default: break;
     }
 //std::cout << "    Vector: '" << current.x << ", " << current.y << ", " << current.z << "'" << std::endl;
@@ -252,9 +254,9 @@ WavefrontObject WavefrontObject::load(
     WavefrontContext context;
     WavefrontObject object;
     object.parseFile(fileName, parseWavefront, &context);
-    object.vertexCount = context.vertices.size();
-    object.normalCount = context.normals.size();
-    object.uvCount = context.uvs.size();
+    object.vertexCount = (uint32_t) context.vertices.size();
+    object.normalCount = (uint32_t) context.normals.size();
+    object.uvCount     = (uint32_t) context.uvs.size();
     return object;
 }
 
@@ -269,6 +271,8 @@ void WavefrontObject::createEntry(
     const std::vector<Vector3f> &normals,
     const uint32_t normalIndex )
 {
+    (void) index;
+
     WavefrontVertex current;
     //current.index = index;
     current.vertex = vertices[vertexIndex];
