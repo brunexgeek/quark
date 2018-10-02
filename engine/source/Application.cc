@@ -6,7 +6,7 @@ Application::Application(
     state_(ApplicationState::ST_IDLE),
     renderer_(renderer)
 {
-
+    Timer::update();
 }
 
 

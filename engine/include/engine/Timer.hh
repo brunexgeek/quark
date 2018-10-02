@@ -29,19 +29,25 @@ class Timer
         Timer() = delete;
 
         /**
-         * Returns the current time.
+         * Returns the current time in microseconds.
          */
         static uint64_t getRealTime();
 
         /**
          * Returns the time computed when 'update' function was called.
+         * The return value is in microseconds.
          */
         static uint64_t getTime();
 
         /**
-         * Update timing counter.
+         * Update the timer control. Must be called once per frame.
          */
         static void update();
+
+        /**
+         * Returns the number of frames per second.
+         */
+        static uint32_t getFPS();
 };
 
 

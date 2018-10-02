@@ -23,6 +23,10 @@ class Mesh
 			const std::vector<Vector3u> &faces,
 			bool isDynamic = false );
 
+		Mesh(
+			const std::string &fileName,
+			bool isDynamic = false );
+
 		Mesh( const Mesh &obj ) = delete;
 
 		Mesh( Mesh &&obj );
@@ -49,6 +53,10 @@ class Mesh
 		uint32_t normalCount_;
 		uint32_t faceCount_;
 		bool isDynamic;
+
+		void initialize(
+			std::istream &in,
+			bool isDynamic = false );
 
 		void populate(
 			const std::vector<Vector3f> &vertex,

@@ -13,20 +13,7 @@ Camera::Camera(
 	float aspect ) : position_(position), up_(up), front_(target * 1000.0F), angles_(0),
 		fov_(fov), aspect_(aspect)
 {
-	//front_ = glm::normalize(front_) + position_;
-	// projection matrix with display range of 0.1 unit <-> 1000 units
-	//projection_ = glm::perspective(glm::radians(fov), aspect, 0.01f, 1000.0f);
 	initProjection(fov, aspect, 0.01F, 1000.0F);
-#if 0
-	//transform_ = lookAt(position_, front_, Vector3f(0.0F, 1.0F, 0.0F));
-	transform_ = lookAt(Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F), Vector3f(0.0F, 1.0F, 0.0F));
-	transform_.translate(Vector3f(0.0F, 0.0F, 5.0F));
-	transform_.update();
-	std::cout << "Wrong:" << transform_.getMatrix() << std::endl;
-	transform_ = lookAt(Vector3f(0.0F, 0.0F, 5.0F), Vector3f(0.0F, 0.0F, 1.0F), Vector3f(0.0F, 1.0F, 0.0F));
-	std::cout << "Right:" << transform_.getMatrix() << std::endl;
-	globalMatrix_ = transform_.getMatrix() * projection_;
-#endif
 	update();
 }
 
@@ -49,8 +36,6 @@ void Camera::initProjection(
 	projection_[{0,0}] = 1.0F / (aspect * tanHalfFovy);
 	projection_[{1,1}] = 1.0F / (tanHalfFovy);
 	projection_[{2,2}] = - (zFar + zNear) / (zFar - zNear);
-	//projection_[{2,3}] = - 1.0F;
-	//projection_[{3,2}] = - (2.0F * zFar * zNear) / (zFar - zNear);
 	projection_[{3,2}] = - 1.0F;
 	projection_[{2,3}] = - (2.0F * zFar * zNear) / (zFar - zNear);
 }
@@ -86,40 +71,8 @@ Matrix4f Camera::lookAt(
 
 void Camera::update()
 {
-#if 0
-	auto ppp = glm::lookAt(
-		glm::vec3(position_.x, position_.y, position_.z),
-		glm::vec3(front_.x, front_.y, front_.z),
-		glm::vec3(0,1,0) );
-	auto proj = glm::perspective( (float)DEGREE_TO_RAD(50.0F), Camera::AR_16x9, 0.01F, 1000.0F);
-	auto glob = proj * ppp;
-#endif
 	matrix_ = lookAt(position_, front_, Vector3f(0.0F, 1.0F, 0.0F)).transpose();
-	//std::cout << &projection_ << std::endl;
-	//std::cout << &matrix_ << std::endl;
-
-	// FIXME: matrix multiplication operator is reversing its operands
 	globalMatrix_ = projection_ * matrix_;
-
-
-	//globalMatrix_ = transform_.getMatrix() * projection_;
-#if 0
-	std::cout << "Projection\n";
-	for (size_t y = 0; y < 4; ++y)
-        std::cout << proj[y][0] << ", " << proj[y][1] << ", " << proj[y][2] << ", " << proj[y][3] << std::endl;
-	std::cout << projection_ << std::endl;
-
-	std::cout << "Matrix\n";
-	for (size_t y = 0; y < 4; ++y)
-        std::cout << ppp[y][0] << ", " << ppp[y][1] << ", " << ppp[y][2] << ", " << ppp[y][3] << std::endl;
-	std::cout << matrix_ << std::endl;
-
-	std::cout << "Global\n";
-	for (size_t y = 0; y < 4; ++y)
-        std::cout << glob[y][0] << ", " << glob[y][1] << ", " << glob[y][2] << ", " << glob[y][3] << std::endl;
-	std::cout << globalMatrix_ << std::endl;
-
-#endif
 }
 
 
@@ -131,49 +84,6 @@ void Camera::move(
 	//front_ += inc;
 	update();
 }
-
-/*
-void Camera::rotatePoint(
-	Vector3f &object,
-	const Vector3f &angles )
-{
-	if (angles.x == 0 && angles.y == 0 && angles.z == 0) return;
-
-	float angleX = DEGREE_TO_RAD(angles.x);
-	float angleY = DEGREE_TO_RAD(angles.y);
-	float angleZ = DEGREE_TO_RAD(angles.z);
-
-	glm::mat4 rotationMat;
-	if (angleX != 0) rotationMat = glm::rotate(rotationMat, angleX, glm::vec3(1, 0, 0));
-	if (angleY != 0) rotationMat = glm::rotate(rotationMat, angleY, glm::vec3(0, 1, 0));
-	if (angleZ != 0) rotationMat = glm::rotate(rotationMat, angleZ, glm::vec3(0, 0, 1));
-	//std::cout << "From: " << object.x << ',' << object.y << ',' << object.z << std::endl;
-	glm::vec3 temp = glm::vec3(rotationMat * glm::vec4(object.x, object.y, object.z, 1.0));
-	object.x = temp.x;
-	object.y = temp.y;
-	object.z = temp.z;
-	//std::cout << "  To: " << object.x << ',' << object.y << ',' << object.z << std::endl << std::endl;
-}
-
-
-void Camera::rotateTarget(
-	const Vector3f &angles )
-{
-	front_ -= position_;
-	rotatePoint(front_, angles);
-	front_ += position_;
-	update();
-}
-
-
-void Camera::rotateCamera(
-	const Vector3f &angles )
-{
-	position_ -= front_;
-	rotatePoint(position_, angles);
-	position_ += front_;
-	update();
-}*/
 
 Vector3f Camera::leftSide() const
 {
@@ -200,19 +110,3 @@ void Camera::tilt( float angle )
 	up_ = Vector3f::cross(front_, axis).normalize();
 	update();
 }
-/*
-void Camera::rotate( float angle, Vector3f axis )
-{
-	float sinHalfAngle = std::sin(DEGREE_TO_RAD(angle) / 2.0F);
-	float cosHalfAngle = std::cos(DEGREE_TO_RAD(angle) / 2.0F);
-
-	Quaternion rotation(
-		axis.x * sinHalfAngle,
-		axis.y * sinHalfAngle,
-		axis.z * sinHalfAngle,
-		cosHalfAngle );
-	Quaternion conj = rotation.conjugate();
-	Quaternion w = rotation * this * conj;
-
-
-}*/

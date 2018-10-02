@@ -2,6 +2,7 @@
 #include <engine/Camera.hh>
 #include <engine/Renderer.hh>
 #include <engine/Mesh.hh>
+#include <engine/Timer.hh>
 #include <engine/Shader.hh>
 #include <engine/Vector2.hh>
 #include <engine/Vector3.hh>
@@ -13,8 +14,8 @@
 #include <fstream>
 
 
-static const Vector3f verts[]  = { {0, 0, 0}, {5, 0, 0}, {0, 5, 0} };
-static const Vector3f colors[] = { {1, 1, 1}, {1, 0, 1}, {0, 1, 1} };
+static const Vector3f verts[]    = { {0, 0, 0}, {5, 0, 0}, {0, 5, 0} };
+static const Vector3f colors[]   = { {1, 1, 1}, {1, 0, 1}, {0, 1, 1} };
 static const Vector3f normals[]  = { {1, 1, 1}, {1, 1, 1}, {1, 1, 1} };
 
 
@@ -28,29 +29,23 @@ class Game : public Application
         Texture *texture;
         float turnDegree = 0;
         Vector3f angles = { 0, 0, 0 };
+        uint32_t lastFPS = 0;
 
         Game( Renderer &renderer, Light &light) : Application(renderer), light(light)
         {
-            /*mesh = new Mesh(&verts[0], &colors[0], &normals[0], 3);*/
             getInput().grabCursor(true);
 
-            /*std::ifstream julietteBin("juliette.blend.bin");
-	        julietteMesh = new Mesh(julietteBin);
-	        julietteBin.close();*/
-            //std::ifstream input("cube.mesher");
-            std::ifstream input("natasha.mesher");
-	        mesh = new Mesh(input);
-	        input.close();
-
-            //texture = new Texture(256, 256, "test.data");
+            // test mesh
+	        mesh = new Mesh("natasha.mesher");
+            // test texture
             texture = new Texture(256, 256, "natasha_body_d.data");
 
             for (size_t i = 0; i < NUM_OBJECTS; ++i)
             {
+                float scale = 30;
                 object[i] = new Object(*mesh, *texture);
-                //object[i]->getTransform().rotate({90, 0, 0});
-                object[i]->getTransform().scale({30, 30, 30});
-                object[i]->getTransform().translate(Vector3f( (float)i * 40.0F, 0.0F, 0.0F));
+                object[i]->getTransform().scale({scale, scale, scale});
+                object[i]->getTransform().translate(Vector3f( (float)i * scale, 0.0F, 0.0F));
                 object[i]->getTransform().update();
             }
         }
@@ -99,11 +94,20 @@ class Game : public Application
 
             if (input.isKeyDown(Input::KEY_D))
             {
-                #if 1
                 Camera &camera = getRenderer().getCamera();
                 camera.move(camera.leftSide(), .3F);
                 light.setPosition(camera.getPosition());
-                #else
+            }
+            else
+            if (input.isKeyDown(Input::KEY_A))
+            {
+                Camera &camera = getRenderer().getCamera();
+                camera.move(camera.rightSide(), .3F);
+                light.setPosition(camera.getPosition());
+            }
+
+            if (input.isKeyDown(Input::KEY_E))
+            {
                 turnDegree += 1.5F;
                 if (turnDegree > 359) turnDegree = 0;
                 for (size_t i = 0; i < NUM_OBJECTS; ++i)
@@ -111,16 +115,10 @@ class Game : public Application
                     object[i]->getTransform().rotate(NAN, turnDegree, NAN);
                     object[i]->getTransform().update();
                 }
-                #endif
             }
             else
-            if (input.isKeyDown(Input::KEY_A))
+            if (input.isKeyDown(Input::KEY_C))
             {
-                #if 1
-                Camera &camera = getRenderer().getCamera();
-                camera.move(camera.rightSide(), .3F);
-                light.setPosition(camera.getPosition());
-                #else
                 turnDegree -= 1.5F;
                 if (turnDegree < 0) turnDegree = 359;
                 for (size_t i = 0; i < NUM_OBJECTS; ++i)
@@ -128,7 +126,6 @@ class Game : public Application
                     object[i]->getTransform().rotate(NAN, turnDegree, NAN);
                     object[i]->getTransform().update();
                 }
-                #endif
             }
 
             if (input.isMouseMoved())
@@ -136,10 +133,6 @@ class Game : public Application
                 static const float AMOUNT = 0.2F;
                 Vector2i delta = input.getMouseDelta();
                 Vector3f displace(0);
-                /*if (delta.x < 0) displace.x = AMOUNT;
-                if (delta.x > 0) displace.x = -AMOUNT;
-                if (delta.y < 0) displace.y = -AMOUNT;
-                if (delta.y > 0) displace.y = AMOUNT;*/
                 displace.x = (float) delta.x * -AMOUNT;
                 displace.y = (float) delta.y * AMOUNT;
                 Camera &camera = getRenderer().getCamera();
@@ -147,7 +140,6 @@ class Game : public Application
                 angles.x += displace.y;
                 if (angles.x < 0) angles.x = 259;
                 if (angles.x >= 260) angles.x = 0;
-                //camera.rotateTarget(displace);
                 //std::cout << "From " << camera.frontSide() << std::endl;
                 camera.pan(displace.x);
                 camera.tilt(displace.y);
@@ -157,11 +149,16 @@ class Game : public Application
 
         void update()
         {
+            uint32_t currentFPS = Timer::getFPS();
+            if (currentFPS != lastFPS)
+            {
+                lastFPS = currentFPS;
+                std::cout << "FPS: " << currentFPS << std::endl;
+            }
         }
 
         void draw()
         {
-            //getRenderer().draw(object->getMesh(), object->getTransform());
             for (size_t i = 0; i < NUM_OBJECTS; ++i)
                 object[i]->draw(getRenderer());
         }
@@ -174,22 +171,8 @@ int main( int argc, char **argv )
     (void) argc;
     (void) argv;
 
-    //Level *level = Level::load("maps/sample.png");
-    //if (level == nullptr) return 1;
-
-
-
     Camera camera(Vector3f(0, 0, 0), Vector3f(0, 1, 0), Vector3f(0, 0, 1), 50.0F, Camera::AR_16x9);
-    std::cout << "Front" << camera.frontSide() << std::endl;
-    std::cout << "Top" << camera.upSide() << std::endl;
-    std::cout << "Left" << camera.leftSide() << std::endl;
-    std::cout << "Right" << camera.rightSide() << std::endl;
 
-    Vector3f dir = camera.frontSide();
-    dir.rotate(10, Vector3f(0, 0, 1));
-    std::cout << "Rotated " << dir << std::endl;
-
-    //return 0;
     Light light(Vector3f(0, 0, 10));
     Renderer renderer(camera, light, 1280, 720);
 

@@ -1,66 +1,31 @@
-/*
- * Copyright (C) 2014 Benny Bobaganoosh
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #include <engine/Input.hh>
-#include <SDL2/SDL.h>
 #include <cstring>
 #include <iostream>
 
 
 Input::Input()
 {
-	//memset(m_inputs, 0, NUM_KEYS * sizeof(bool));
-	//memset(m_downKeys, 0, NUM_KEYS * sizeof(bool));
-	//memset(m_upKeys, 0, NUM_KEYS * sizeof(bool));
 	memset(keyboard, 0, NUM_KEYS * sizeof(uint8_t));
 	memset(mouseButton, 0, NUM_MOUSEBUTTONS * sizeof(bool));
-	mousePosition.x = mousePosition.y = 0;
-	mouseDelta.x = mouseDelta.y = 0;
 
-	SDL_ShowCursor(SDL_ENABLE);
+	channel = new SDLChannel();
 }
 
 
 Input::~Input()
 {
-	SDL_ShowCursor(SDL_ENABLE);
-	SDL_CaptureMouse(SDL_TRUE);
 }
 
 
 void Input::grabCursor(bool enabled)
 {
-	if(enabled)
-	{
-		//SDL_ShowCursor(SDL_DISABLE);
-		//if (SDL_CaptureMouse(SDL_TRUE) < 0) std::cout << "Mouse grab unsupported!\n";
-		SDL_SetRelativeMouseMode(SDL_TRUE);
-	}
-	else
-	{
-		//SDL_ShowCursor(SDL_ENABLE);
-		//SDL_CaptureMouse(SDL_FALSE);
-		SDL_SetRelativeMouseMode(SDL_FALSE);
-	}
+	channel->grabCursor(enabled);
 }
 
 
 bool Input::isCursorGrabbed() const
 {
-	return SDL_GetRelativeMouseMode() != 0;
+	return channel->isCursorGrabbed();
 }
 
 
@@ -68,43 +33,25 @@ void Input::update()
 {
 	mouseDelta.x = mouseDelta.y = 0;
 
-	SDL_Event e;
-	while(SDL_PollEvent(&e))
+	InputEvent event;
+	while (channel->poolEvent(event))
 	{
-		/*if(e.type == SDL_QUIT)
+		if(event.type == QUARK_MOUSEMOTION)
 		{
-			m_isCloseRequested = true;
-		}*/
-
-		if(e.type == SDL_MOUSEMOTION)
-		{
-			setMouseX(e.motion.x, e.motion.xrel);
-			setMouseY(e.motion.y, e.motion.yrel);
+			setMouseX(event.mouse.motion.x, event.mouse.motion.xrel);
+			setMouseY(event.mouse.motion.y, event.mouse.motion.yrel);
 		}
-
-		if(e.type == SDL_KEYDOWN)
-		{
-			int value = e.key.keysym.scancode;
-
-			setKey(value, true);
-		}
-		if(e.type == SDL_KEYUP)
-		{
-			int value = e.key.keysym.scancode;
-
-			setKey(value, false);
-		}
-		if(e.type == SDL_MOUSEBUTTONDOWN)
-		{
-			int value = e.button.button;
-
-			setMouseButton(value, true);
-		}
-		if(e.type == SDL_MOUSEBUTTONUP)
-		{
-			int value = e.button.button;
-
-			setMouseButton(value, false);
-		}
+		else
+		if (event.type == QUARK_MOUSEBUTTONDOWN)
+			setMouseButton(event.mouse.button.button, true);
+		else
+		if (event.type == QUARK_MOUSEBUTTONUP)
+			setMouseButton(event.mouse.button.button, false);
+		else
+		if(event.type == QUARK_KEYDOWN)
+			setKey(event.keyboard.key.scancode, true);
+		else
+		if(event.type == QUARK_KEYUP)
+			setKey(event.keyboard.key.scancode, false);
 	}
 }

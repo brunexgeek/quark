@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <engine/Vector3.hh>
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include <vector>
 #include <cstring>
@@ -44,6 +45,19 @@ Mesh::Mesh(
 }
 
 
+Mesh::Mesh(
+	const std::string &fileName,
+	bool isDynamic )
+{
+	std::ifstream input(fileName.c_str(), std::ios_base::in | std::ios_base::binary);
+	if (input.good())
+	{
+		initialize(input, isDynamic);
+		input.close();
+	}
+}
+
+
 Mesh::Mesh( Mesh &&obj )
 {
 	vertexHandle_ = obj.vertexHandle_;
@@ -63,6 +77,26 @@ Mesh::~Mesh()
 	glDeleteBuffers(1, &normalHandle_);
 	glDeleteBuffers(1, &uvHandle_);
 	glDeleteBuffers(1, &faceHandle_);
+}
+
+
+void Mesh::initialize(
+	std::istream &in,
+	bool isDynamic )
+{
+	std::vector<Vector3f> vertex;
+	std::vector<Vector2f> uv;
+	std::vector<Vector3f> normal;
+	std::vector<Vector3u> faceIndex;
+
+	glGenBuffers(1, &vertexHandle_);
+	glGenBuffers(1, &normalHandle_);
+	glGenBuffers(1, &uvHandle_);
+	glGenBuffers(1, &faceHandle_);
+
+	//loadBin(in, Vector3f, color, normal, count);
+	loadBinary(in, vertex, normal, uv, faceIndex);
+	populate(vertex, normal, uv, faceIndex, isDynamic);
 }
 
 
@@ -111,55 +145,6 @@ Vector3f *Mesh::computeNormal(
 	// TODO: implement this!
 	return NULL;
 }
-
-/*
-void Mesh::setVertex(
-	const Vector3f *Vector3f,
-	uint32_t begin,
-	uint32_t size )
-{
-	setData(vertexId, (uint8_t*) Vector3f, begin, size, sizeof(Vector3f));
-}
-
-
-void Mesh::setNormal(
-	const Vector3f *normal,
-	uint32_t begin,
-	uint32_t size )
-{
-	setData(normalId, (uint8_t*) normal, begin, size, sizeof(Vector3f));
-}
-
-
-void Mesh::setColor(
-	const Vector3f *color,
-	uint32_t begin,
-	uint32_t size )
-{
-	setData(colorId, (uint8_t*) color, begin, size, sizeof(Vector3f));
-}
-
-
-void Mesh::setData(
-	uint32_t id,
-	const uint8_t *data,
-	uint32_t start,
-	uint32_t count,
-	uint32_t size )
-{
-	glBindBuffer(GL_ARRAY_BUFFER, id);
-//std::cout << "Copy " << this->count << "x" << size << std::endl;
-	if (start == 0 && count == 0)
-		glBufferData(GL_ARRAY_BUFFER, this->count * size, data,
-			(isDynamic) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-	else
-	{
-		if (count == 0) count = this->count - start;
-
-		glBufferSubData(GL_ARRAY_BUFFER, size * start, size * count, data);
-	}
-}
-*/
 
 
 // FIXME: validate header/section signature

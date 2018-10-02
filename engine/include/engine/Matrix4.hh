@@ -174,8 +174,6 @@ struct Matrix
 typedef Matrix<float, 16> Matrix4f;
 
 
-#if 1
-
 #include <iostream>
 #include <iomanip>
 
@@ -185,17 +183,23 @@ typedef Matrix<float, 16> Matrix4f;
 template <typename T, int DIM>
 static std::ostream &operator << ( std::ostream &out, const Matrix<T,DIM> &value )
 {
-    for (size_t y = 0; y < 4; ++y)
-        out << std::setw(11) << value[y][0] << ", "
-            << std::setw(11) << value[y][1] << ", "
-            << std::setw(11) << value[y][2] << ", "
-            << std::setw(11) << value[y][3] << std::endl;
+    out << "[ ";
+    for (size_t y = 0; y < DIM; ++y)
+    {
+        for (size_t x = 0; x < DIM; ++x)
+        {
+            out << std::setw(11) << value[y][x];
+            if (x + 1 < DIM)
+                out << ", ";
+            else
+                out << std::endl;
+        }
+    }
+    out << "]";
     return out;
 }
 
 #pragma GCC diagnostic pop
-
-#endif
 
 
 #endif // ENGINE_MATRIX4_HH
