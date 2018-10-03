@@ -158,7 +158,7 @@ void Mesh::loadBinary(
 	if (in.good() == false)
 		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
 
-	in.seekg(0x00000008, in.beg);
+	in.seekg(0x000000010, in.beg);
 	uint32_t total;
 
 	// reads the vertices

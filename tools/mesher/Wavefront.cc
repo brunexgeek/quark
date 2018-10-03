@@ -5,28 +5,27 @@
 
 struct WavefrontContext
 {
-    uint32_t indexCounter = 0;
-    uint32_t materialCounter = 0;
-    std::vector<int> materials;
-    std::vector<Vector3f> vertices;
-    std::vector<Vector3f> normals;
-    std::vector<Vector2f> uvs;
+    uint32_t vertexCount = 0;
+    uint32_t uvCount = 0;
+    uint32_t normalCount = 0;
+    uint32_t faceCount = 0;
     WavefrontMaterial *currentMaterial;
+    WavefrontObject *currentObject;
 };
 
 
 static void parseMaterials(
     const std::vector<std::string> &content,
-    WavefrontObject &object,
+    WavefrontModel &model,
     void *context )
 {
     WavefrontContext &ctx = *((WavefrontContext*)context);
 
     if (content[0] == "newmtl" && content.size() == 2)
     {
-        ctx.currentMaterial = new WavefrontMaterial(ctx.materialCounter++, content[1]);
-        object.materialLibrary.insert(std::pair<std::string,WavefrontMaterial*>(content[1], ctx.currentMaterial));
-        std::cout << "Found material '" << content[1] << "'  [#" << ctx.currentMaterial->id << "]" << std::endl;
+        ctx.currentMaterial = new WavefrontMaterial(content[1]);
+        model.materialLibrary.insert(std::pair<std::string,WavefrontMaterial*>(content[1], ctx.currentMaterial));
+        std::cout << "Found material '" << content[1] << std::endl;
     }
     else
     if (content[0] == "Kd" && content.size() == 4 && ctx.currentMaterial != NULL)
@@ -43,22 +42,28 @@ static void parseMaterials(
 }
 
 
-static void parseWavefront(
+static void parseModel(
     const std::vector<std::string> &content,
-    WavefrontObject &object,
+    WavefrontModel &model,
     void *context )
 {
     WavefrontContext &ctx = *((WavefrontContext*)context);
 
-    bool foundMaterials = false;
-    if (content[0] == "mtllib" && content.size() == 2 && !foundMaterials)
+    if (content[0] == "mtllib" && content.size() == 2)
     {
         ctx.currentMaterial = nullptr;
-        object.parseFile(content[1], parseMaterials, context);
+        model.parseFile(content[1], parseMaterials, context);
         ctx.currentMaterial = nullptr;
-        foundMaterials = true;
     }
     else
+    if (content[0] == "o" && content.size() == 2)
+    {
+        ctx.currentObject = new WavefrontObject(content[1]);
+        model.objects.push_back(ctx.currentObject);
+    }
+
+    if (ctx.currentObject == nullptr) return;
+
     // handles vertices
     if (content[0] == "v" && (content.size() == 4 || content.size() == 5))
     {
@@ -70,16 +75,18 @@ static void parseWavefront(
             vertex.w = atof(content[4].c_str());
         else
             vertex.w = 1.0F;*/
-        ctx.vertices.push_back(vertex);
+        ctx.currentObject->vertices.push_back(vertex);
+        ++ctx.vertexCount;
     }
     else
     // handles textures coordinates
     if (content[0] == "usemtl" && content.size() == 2)
     {
         ctx.currentMaterial = nullptr;
-        auto it = object.materialLibrary.find(content[1]);
-        if (it != object.materialLibrary.end())
+        auto it = model.materialLibrary.find(content[1]);
+        if (it != model.materialLibrary.end())
             ctx.currentMaterial = it->second;
+        ctx.currentObject->material = content[1];
     }
     else
     // handles normals
@@ -89,7 +96,8 @@ static void parseWavefront(
         normal.x = (float) atof(content[1].c_str());
         normal.y = (float) atof(content[2].c_str());
         normal.z = (float) atof(content[3].c_str());
-        ctx.normals.push_back(normal);
+        ctx.currentObject->normals.push_back(normal);
+        ++ctx.normalCount;
     }
     else
     // handles normals
@@ -98,37 +106,59 @@ static void parseWavefront(
         Vector2f uv;
         uv.x = (float) atof(content[1].c_str());
         uv.y = (float) atof(content[2].c_str());
-        ctx.uvs.push_back(uv);
+        ctx.currentObject->uvs.push_back(uv);
+        ++ctx.uvCount;
     }
     else
     // handles faces
     if (content[0] == "f" && content.size() == 4)
     {
-        Vector3u first  = object.getTriple(content[1]);
-        Vector3u second = object.getTriple(content[2]);
-        Vector3u third  = object.getTriple(content[3]);
+        Vector3u first  = model.getTriple(content[1]);
+        Vector3u second = model.getTriple(content[2]);
+        Vector3u third  = model.getTriple(content[3]);
 
-        object.createEntry(ctx.indexCounter++, object.faces, ctx.vertices, first.x - 1,  ctx.uvs, first.y - 1,  ctx.normals, first.z - 1);
-        object.createEntry(ctx.indexCounter++, object.faces, ctx.vertices, second.x - 1, ctx.uvs, second.y - 1, ctx.normals, second.z - 1);
-        object.createEntry(ctx.indexCounter++, object.faces, ctx.vertices, third.x - 1,  ctx.uvs, third.y - 1,  ctx.normals, third.z - 1);
+        WavefrontFace face;
+        face.vertices[0] = first.x;
+        face.vertices[1] = second.x;
+        face.vertices[2] = third.x;
+        face.uvs[0] = first.y;
+        face.uvs[1] = second.y;
+        face.uvs[2] = third.y;
+        face.normals[0] = first.z;
+        face.normals[1] = second.z;
+        face.normals[2] = third.z;
 
-        //faceIndex.push_back(Vector3u(first.x - 1, second.x - 1, third.x - 1));
-        //normalIndex.push_back(Vector3u(first.z - 1, second.z - 1, third.z - 1));
+        ctx.currentObject->faces.push_back(face);
+        ++ctx.faceCount;
     }
 }
 
 
-
-WavefrontObject::WavefrontObject( WavefrontObject&& object )
+WavefrontObject::WavefrontObject(
+    const std::string &name ) : name(name)
 {
-    vertexCount = object.vertexCount;
-	normalCount = object.normalCount;
-	materialLibrary.swap(object.materialLibrary);
-	faces.swap(object.faces);
 }
 
 
-char *WavefrontObject::cleanup( char *line )
+WavefrontObject::WavefrontObject(
+    WavefrontObject&& object )
+{
+    name = object.name;
+	material = object.material;
+	vertices.swap(object.vertices);
+    normals.swap(object.normals);
+    uvs.swap(object.uvs);
+}
+
+
+WavefrontModel::WavefrontModel(
+    WavefrontModel&& model )
+{
+    objects.swap(model.objects);
+}
+
+
+char *WavefrontModel::cleanup( char *line )
 {
     // ignore spaces from the begin
     char *ptr = line;
@@ -146,7 +176,7 @@ char *WavefrontObject::cleanup( char *line )
 }
 
 
-void WavefrontObject::split(
+void WavefrontModel::split(
     char *text,
     std::vector<std::string> &words,
     const char separator )
@@ -181,7 +211,7 @@ void WavefrontObject::split(
 }
 
 
-void WavefrontObject::parseFile(
+void WavefrontModel::parseFile(
     const std::string &fileName,
     WavefrontParser *parser,
     void *context )
@@ -195,7 +225,7 @@ void WavefrontObject::parseFile(
 }
 
 
-void WavefrontObject::parseFile(
+void WavefrontModel::parseFile(
     std::istream &in,
     WavefrontParser *parser,
     void *context )
@@ -224,7 +254,7 @@ void WavefrontObject::parseFile(
 }
 
 
-Vector3u WavefrontObject::getTriple(
+Vector3u WavefrontModel::getTriple(
     const std::string &triple )
 {
     std::vector<std::string> values;
@@ -248,35 +278,16 @@ Vector3u WavefrontObject::getTriple(
 }
 
 
-WavefrontObject WavefrontObject::load(
+WavefrontModel WavefrontModel::load(
     const std::string &fileName )
 {
     WavefrontContext context;
-    WavefrontObject object;
-    object.parseFile(fileName, parseWavefront, &context);
-    object.vertexCount = (uint32_t) context.vertices.size();
-    object.normalCount = (uint32_t) context.normals.size();
-    object.uvCount     = (uint32_t) context.uvs.size();
-    return object;
+    WavefrontModel model;
+    model.parseFile(fileName, parseModel, &context);
+    model.vertexCount = context.vertexCount;
+    model.uvCount     = context.uvCount;
+    model.normalCount = context.normalCount;
+    model.faceCount   = context.faceCount;
+    return model;
 }
 
-
-void WavefrontObject::createEntry(
-    uint32_t index,
-    std::list<WavefrontVertex> &out,
-    const std::vector<Vector3f> &vertices,
-    const uint32_t vertexIndex,
-    const std::vector<Vector2f> &uvs,
-    const uint32_t uvIndex,
-    const std::vector<Vector3f> &normals,
-    const uint32_t normalIndex )
-{
-    (void) index;
-
-    WavefrontVertex current;
-    //current.index = index;
-    current.vertex = vertices[vertexIndex];
-    current.uv      = uvs[uvIndex];
-    current.normal = normals[normalIndex];
-    out.push_back(current);
-}

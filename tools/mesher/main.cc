@@ -10,6 +10,7 @@
 
 #include <engine/Quaternion.hh>
 #include <engine/Vector.hh>
+#include <engine/Mesher.hh>
 #include "Wavefront.hh"
 
 
@@ -37,25 +38,43 @@ std::string outputFileName;
 
 static void main_printWavefront(
 	std::ostream &out,
-	const WavefrontObject &object )
+	const WavefrontModel &model )
 {
-	for (auto it = object.faces.begin(); it != object.faces.end(); ++it )
-		std::cerr << "v " << it->vertex << std::endl;
+	out.setf( std::ios::fixed, std:: ios::floatfield );
 
-	for (auto it = object.faces.begin(); it != object.faces.end(); ++it )
-		std::cerr << "vn " << it->normal << std::endl;
-
-	uint32_t index = 0;
-	for (auto it = object.faces.begin(); it != object.faces.end(); )
+	for (auto obj = model.objects.begin(); obj != model.objects.end(); ++obj)
 	{
-		std::cerr << "f";
-		for (size_t i = 0; i < 3 && it != object.faces.end(); ++i, ++it)
-			std::cerr <<  ' ' << index << "//" << index;
-		std::cerr << std::endl;
+		WavefrontObject &object = **obj;
+		out << "o " << object.name << std::endl;
+
+		// vertex
+		out << std::setprecision(6);
+		for (auto it = object.vertices.begin(); it != object.vertices.end(); ++it )
+			out << "v " << it->x << ' ' << it->y << ' ' << it->z << std::endl;
+		// UV
+		out << std::setprecision(6);
+		for (auto it = object.uvs.begin(); it != object.uvs.end(); ++it )
+			out << "vt " << it->x << ' ' << it->y << std::endl;
+		// normal
+		out << std::setprecision(4);
+		for (auto it = object.normals.begin(); it != object.normals.end(); ++it )
+			out << "vn " << it->x << ' ' << it->y << ' ' << it->z << std::endl;
+		// material
+		out << "usemtl " << object.material << std::endl;
+		// face
+		for (auto it = object.faces.begin(); it != object.faces.end(); ++it )
+		{
+			out << "f";
+			for (size_t i = 0; i < 3; ++i)
+				out << ' ' << it->vertices[i]
+					<< '/' << it->uvs[i]
+					<< '/' << it->normals[i];
+			out << std::endl;
+		}
 	}
 }
 
-
+#if 0
 static void main_writeBinary(
 	std::ostream &out,
 	const WavefrontObject &object )
@@ -95,6 +114,7 @@ static void main_writeBinary(
 	WRITE_U32(out, object.normalIndex.size());
 	WRITE_U8P(out, object.normalIndex.data(), object.normalIndex.size() * sizeof(Vector3u));*/
 }
+#endif
 
 
 static void main_usage()
@@ -128,6 +148,20 @@ static void main_parseOptions( int argc, char **argv )
 }
 
 
+static void main_createEntry(
+	const WavefrontObject &source,
+	MesherObject &dest,
+    uint32_t vertexIndex,
+    uint32_t uvIndex,
+    uint32_t normalIndex )
+{
+	MesherFace face;
+    face.vertex = source.vertices[vertexIndex];
+    face.uv     = source.uvs[uvIndex];
+    face.normal = source.normals[normalIndex];
+	dest.faces.push_back(face);
+}
+
 
 int main( int argc, char **argv )
 {
@@ -135,15 +169,33 @@ int main( int argc, char **argv )
 
 	std::map<std::string, WavefrontMaterial> materials;
 
-	WavefrontObject source = WavefrontObject::load(inputFileName.c_str());
+	WavefrontModel source = WavefrontModel::load(inputFileName.c_str());
 
 	std::cout << std::endl << "### Input file ###" << std::endl;
 	std::cout << "   Vertices: " << source.vertexCount << std::endl;
 	std::cout << "    Normals: " << source.normalCount << std::endl;
 	std::cout << "        UVs: " << source.uvCount << std::endl;
-	std::cout << "      Faces: " << source.faces.size() / 3 << std::endl;
+	std::cout << "      Faces: " << source.faceCount / 3 << std::endl;
 	std::cout << "  Materials: " << source.materialLibrary.size() << std::endl;
 
+	//main_printWavefront(std::cerr, source);
+
+	MesherModel dest;
+	for (auto it = source.objects.begin(); it != source.objects.end(); ++it)
+	{
+		MesherObject object;
+		object.name = (*it)->name;
+		for (auto face = (*it)->faces.begin(); face != (*it)->faces.end(); ++face)
+		{
+			main_createEntry(*(*it), object, face->vertices[0] - 1, face->uvs[0] - 1, face->normals[0] - 1);
+			main_createEntry(*(*it), object, face->vertices[1] - 1, face->uvs[1] - 1, face->normals[1] - 1);
+			main_createEntry(*(*it), object, face->vertices[2] - 1, face->uvs[2] - 1, face->normals[2] - 1);
+		}
+		dest.objects.push_back(object);
+	}
+
+	dest.save(outputFileName);
+/*
 	std::cout << std::endl << "### Output file ###" << std::endl;
 	std::cout << "   Vertices: " << source.faces.size() << std::endl;
 	std::cout << "    Normals: " << source.faces.size() << std::endl;
@@ -155,5 +207,5 @@ int main( int argc, char **argv )
 	main_writeBinary(outputFile, source);
 	//uint32_t count = (uint32_t) source.vertices.size();
 	//outputFile.write( (char*) &count, sizeof(uint32_t));
-	outputFile.close();
+	outputFile.close();*/
 }

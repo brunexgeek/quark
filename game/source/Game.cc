@@ -36,7 +36,7 @@ class Game : public Application
             getInput().grabCursor(true);
 
             // test mesh
-	        mesh = new Mesh("natasha.mesher");
+	        mesh = new Mesh("natasha2.mesher");
             // test texture
             texture = new Texture(256, 256, "natasha_body_d.data");
 

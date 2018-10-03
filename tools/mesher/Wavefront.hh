@@ -11,7 +11,6 @@
 
 struct WavefrontMaterial
 {
-	uint32_t id;
 	Vector3f colorDiffuse;
 	Vector3f colorSpecular;
 	Vector3f colorAmbient;
@@ -19,16 +18,14 @@ struct WavefrontMaterial
 	std::string texture;
 
 	WavefrontMaterial(
-		uint32_t id,
-		std::string name ) : id(id), name(name)
+		std::string name ) : name(name)
 	{
 		// nothing to do
 	}
 
 	WavefrontMaterial(
-		uint32_t id,
 		const std::string &name,
-		const std::string &texture ) : id(id), name(name), texture(texture)
+		const std::string &texture ) : name(name), texture(texture)
 	{
 		// nothing to do
 	}
@@ -36,38 +33,51 @@ struct WavefrontMaterial
 };
 
 
-struct WavefrontObject;
+struct WavefrontModel;
 
 
 typedef void (WavefrontParser)(
 	const std::vector<std::string> &content,
-	WavefrontObject &object,
+	WavefrontModel &model,
 	void *context );
 
 
-struct WavefrontVertex
+struct WavefrontFace
 {
-	//uint32_t index;
-	Vector3f vertex;
-	Vector3f normal;
-	//Vector3f color;
-	Vector2f uv;
+	uint32_t vertices[3];
+	uint32_t normals[3];
+	uint32_t uvs[3];
 };
 
 
 struct WavefrontObject
 {
-	//std::vector<Vector3u> faceIndex; // every element make a triangle
-	//std::vector<Vector3u> normalIndex; // every element make a triangle normal
-	uint32_t vertexCount;
-	uint32_t uvCount;
-	uint32_t normalCount;
+	std::string name;
+	std::string material;
+	std::vector<Vector3f> vertices;
+    std::vector<Vector3f> normals;
+    std::vector<Vector2f> uvs;
+	std::list<WavefrontFace> faces;
+
+	WavefrontObject( const std::string &name );
+	WavefrontObject( WavefrontObject&& object );
+};
+
+
+struct WavefrontModel
+{
 	std::unordered_map<std::string, WavefrontMaterial*> materialLibrary;
-	std::list<WavefrontVertex> faces;
+	std::list<WavefrontObject*> objects;
+	uint32_t vertexCount = 0;
+    uint32_t uvCount = 0;
+    uint32_t normalCount = 0;
+	uint32_t faceCount = 0;
 
-    WavefrontObject( const WavefrontObject &obj ) = delete;
+    WavefrontModel(
+		const WavefrontModel &obj ) = delete;
 
-    WavefrontObject( WavefrontObject&& );
+    WavefrontModel(
+		WavefrontModel&& );
 
     static char *cleanup( char *line );
 
@@ -87,23 +97,14 @@ struct WavefrontObject
         void *context );
 
 
-	static Vector3u getTriple( const std::string &triple );
+	static Vector3u getTriple(
+		const std::string &triple );
 
-	static WavefrontObject load(
+	static WavefrontModel load(
 		const std::string &fileName );
 
-	void createEntry(
-		uint32_t index,
-		std::list<WavefrontVertex> &out,
-		const std::vector<Vector3f> &vertices,
-		const uint32_t vertexIndex,
-		const std::vector<Vector2f> &uvs,
-		const uint32_t uvIndex,
-		const std::vector<Vector3f> &normals,
-		const uint32_t normalIndex );
-
     private:
-        WavefrontObject() {}
+        WavefrontModel() {}
 
 };
 
