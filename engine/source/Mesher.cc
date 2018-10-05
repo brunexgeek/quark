@@ -24,12 +24,12 @@
 	} while(false)
 
 
-#define MESHER_SIGNATURE         0x4853454D
-#define MESHER_OBJECT_SIGNATURE  0x544A424F
-#define MESHER_VERTEX_SIGNATURE  0x54524556
-#define MESHER_NORMAL_SIGNATURE  0x4D524F4E
-#define MESHER_UV_SIGNATURE      0x20205655
-#define MESHER_FACE_SIGNATURE    0x45434146
+#define MESHER_SIGNATURE         (uint32_t) 0x4853454D
+#define MESHER_OBJECT_SIGNATURE  (uint32_t) 0x544A424F
+#define MESHER_VERTEX_SIGNATURE  (uint32_t) 0x54524556
+#define MESHER_NORMAL_SIGNATURE  (uint32_t) 0x4D524F4E
+#define MESHER_UV_SIGNATURE      (uint32_t) 0x20205655
+#define MESHER_FACE_SIGNATURE    (uint32_t) 0x45434146
 
 
 MesherModel::MesherModel()
@@ -38,148 +38,138 @@ MesherModel::MesherModel()
 
 
 MesherModel::MesherModel(
-    std::istream &in )
+	std::istream &in )
 {
+	load(in);
 }
 
 
 MesherModel::MesherModel(
-    const std::string &fileName )
+	const std::string &fileName )
 {
-
+	std::ifstream input(fileName.c_str(), std::ios_base::in | std::ios_base::binary);
+	if (input.good())
+	{
+		load(input);
+		input.close();
+	}
 }
 
 
 MesherModel& MesherModel::operator+=(
-    MesherObject &object )
+	MesherObject &object )
 {
-    objects.push_back(object);
-    return *this;
+	objects.push_back(object);
+	return *this;
 }
 
 
 void MesherModel::save(
 	std::ostream &out )
 {
-    // file header
-    WRITE_U32(out, MESHER_SIGNATURE); // signature
-    WRITE_U16(out, 0x0001);     // format
-    WRITE_U16(out, 0x0000);     // reserved
+	// file header
+	WRITE_U32(out, MESHER_SIGNATURE); // signature
+	WRITE_U16(out, 0x0001);           // format
+	WRITE_U16(out, objects.size());   // number of objects
 
-    for (auto it = objects.begin(); it != objects.end(); ++it)
-    {
-        // object header
-        WRITE_U32(out, MESHER_OBJECT_SIGNATURE);
+	char name[MESHER_MAX_OBJ_NAME + 1];
 
-        // vertex section
-        WRITE_U32(out, MESHER_VERTEX_SIGNATURE);
-        WRITE_U32(out, it->faces.size());
-        for (auto item = it->faces.begin(); item != it->faces.end(); ++item )
-            WRITE_V3F(out, item->vertex);
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		// object header
+		Serializer::writeUint32(out, MESHER_OBJECT_SIGNATURE);
+		Serializer::writeUint32(out, (uint32_t) it->faces->size());
+		strncpy(name, it->name.c_str(), MESHER_MAX_OBJ_NAME);
+		Serializer::writeBuffer(out, (const uint8_t*) name, MESHER_MAX_OBJ_NAME);
 
-        // normal section
-        WRITE_U32(out, MESHER_NORMAL_SIGNATURE);
-        WRITE_U32(out, it->faces.size());
-        for (auto item = it->faces.begin(); item != it->faces.end(); ++item )
-            WRITE_V3F(out, item->normal);
+		// vertices
+		Serializer::writeUint32(out, MESHER_VERTEX_SIGNATURE);
+		Serializer::writeUint32(out, (uint32_t) it->vertices->size());
+		Serializer::writeBuffer(out, (const uint8_t*) it->vertices->data(), it->vertices->size() * sizeof(Vector3f));
 
-        // texture coordinates section
-        WRITE_U32(out, MESHER_UV_SIGNATURE);
-        WRITE_U32(out, it->faces.size());
-        for (auto item = it->faces.begin(); item != it->faces.end(); ++item )
-            WRITE_V2F(out, item->uv);
+		// normals
+		Serializer::writeUint32(out, MESHER_NORMAL_SIGNATURE);
+		Serializer::writeUint32(out, (uint32_t) it->normals->size());
+		Serializer::writeBuffer(out, (const uint8_t*) it->normals->data(), it->normals->size() * sizeof(Vector3f));
 
-        // face section
-        WRITE_U32(out, MESHER_FACE_SIGNATURE);
-        WRITE_U32(out, it->faces.size() / 3);
-        uint32_t index = 0;
-        for (auto item = it->faces.begin(); item != it->faces.end(); ++item)
-            for (size_t i = 0; i < 3; ++i) WRITE_U32(out, index++);
-    }
+		// UVs
+		Serializer::writeUint32(out, MESHER_UV_SIGNATURE);
+		Serializer::writeUint32(out, (uint32_t) it->uvs->size());
+		Serializer::writeBuffer(out, (const uint8_t*) it->uvs->data(), it->uvs->size() * sizeof(Vector2f));
+
+		// faces
+		Serializer::writeUint32(out, MESHER_FACE_SIGNATURE);
+		Serializer::writeUint32(out, (uint32_t) it->faces->size());
+		Serializer::writeBuffer(out, (const uint8_t*) it->faces->data(), it->faces->size() * sizeof(Vector3u));
+	}
 }
 
 
 void MesherModel::save(
 	const std::string &fileName )
 {
-    std::ofstream output(fileName.c_str(), std::ios_base::out | std::ios_base::binary);
-    if (output.good())
-    {
-        save(output);
-        output.close();
-    }
+	std::ofstream output(fileName.c_str(), std::ios_base::out | std::ios_base::binary);
+	if (output.good())
+	{
+		save(output);
+		output.close();
+	}
 }
 
-#if 0
-Complete this!
+
 void MesherModel::load(
-    std::istream &in )
+	std::istream &in )
 {
-	if (in.good() == false)
+	if (!in.good())
 		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
 
-	uint32_t uiValue = 0;
-    if (Serializer::readUint32(in) != MESHER_SIGNATURE)
-        throw EXCEPTION(ERR_IO_READ, 0, "Invalid file signature");
+	// header
+	if (Serializer::readUint32(in) != MESHER_SIGNATURE)
+		throw EXCEPTION(ERR_IO_READ, 0, "Invalid file signature");
+	if (Serializer::readUint16(in) != MESHER_FORMAT_VNU_24)
+		throw EXCEPTION(ERR_IO_READ, 0, "Invalid mesh format");
+	uint32_t objectCount = Serializer::readUint16(in);
 
-	uint32_t total = 0;
+	char name[MESHER_MAX_OBJ_NAME + 1];
 
-	// reads the vertices
-    total = Serializer::readUint32(in);
-	if (!in.good() || total > 0x00FFFFFF)
-		throw EXCEPTION(ERR_IO_READ, 0, "Invalid amount of vertices");
-	if (total > 0)
+	for (uint32_t i = 0; i < objectCount; ++i)
 	{
-		vertices.resize(total);
-		in.read( (char*) vertices.data(), total * sizeof(Vector3f) );
+		// object header
+		if (Serializer::readUint32(in) != MESHER_OBJECT_SIGNATURE)
+			throw EXCEPTION(ERR_IO_READ, 0, "Invalid object signature");
+		uint32_t total = Serializer::readUint32(in);
+		Serializer::readBuffer(in, (uint8_t*) name, MESHER_MAX_OBJ_NAME);
+
+		MesherObject object;
+
+		// vertices
+		if (Serializer::readUint32(in) != MESHER_VERTEX_SIGNATURE)
+			throw EXCEPTION(ERR_IO_READ, 0, "Invalid vertex signature");
+		total = Serializer::readUint32(in);
+		object.vertices->resize(total);
+		Serializer::readBuffer(in, (uint8_t*) object.vertices->data(), total * sizeof(Vector3f));
+
+		// normals
+		if (Serializer::readUint32(in) != MESHER_NORMAL_SIGNATURE)
+			throw EXCEPTION(ERR_IO_READ, 0, "Invalid normal signature");
+		total = Serializer::readUint32(in);
+		object.normals->resize(total);
+		Serializer::readBuffer(in, (uint8_t*) object.normals->data(), total * sizeof(Vector3f));
+
+		// UVs
+		if (Serializer::readUint32(in) != MESHER_UV_SIGNATURE)
+			throw EXCEPTION(ERR_IO_READ, 0, "Invalid UV signature");
+		total = Serializer::readUint32(in);
+		object.uvs->resize(total);
+		Serializer::readBuffer(in, (uint8_t*) object.uvs->data(), total * sizeof(Vector2f));
+
+		// faces
+		if (Serializer::readUint32(in) != MESHER_FACE_SIGNATURE)
+			throw EXCEPTION(ERR_IO_READ, 0, "Invalid face signature");
+		total = Serializer::readUint32(in);
+		object.faces->resize(total);
+		Serializer::readBuffer(in, (uint8_t*) object.faces->data(), total * sizeof(Vector3u));
+
+		objects.push_back(object);
 	}
-
-	// reads the normals
-	in.seekg(0x00000004, in.cur);
-	in.read( (char*) &total, sizeof(uint32_t) );
-	if (in.good() == false || total > 0x7FFFF)
-		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
-	if (total > 0)
-	{
-		normals.resize(total);
-		in.read( (char*) normals.data(), total * sizeof(Vector3f) );
-	}
-
-	// reads the texture coordinates
-	in.seekg(0x00000004, in.cur);
-	in.read( (char*) &total, sizeof(uint32_t) );
-	if (in.good() == false || total > 0x7FFFF)
-		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
-	if (total > 0)
-	{
-		uvs.resize(total);
-		in.read( (char*) uvs.data(), total * sizeof(Vector2f) );
-	}
-
-	// reads the face indexes
-	in.seekg(0x00000004, in.cur);
-	in.read( (char*) &total, sizeof(uint32_t) );
-	if (in.good() == false || total > 0x7FFFF)
-		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
-	if (total > 0)
-	{
-		faceIndex.resize(total);
-		in.read( (char*) faceIndex.data(), total * sizeof(Vector3f) );
-	}
-	// reads the normal indexes
-	/*in.seekg(0x00000004, in.cur);
-	in.read( (char*) &total, sizeof(uint32_t) );
-	if (in.good() == false || total > 0x7FFFF)
-		throw EXCEPTION(ERR_IO_READ, 0, "Unable to read data from input");
-	if (total > 0)
-	{
-		normalIndex.resize(total);
-		in.read( (char*) normalIndex.data(), total * sizeof(Vector3f) );
-	}*/
-
-	std::cout << "Loaded model:" << std::endl;
-	std::cout << "      Faces: " << faceIndex.size() << std::endl;
-	std::cout << "   Vertices: " << vertices.size() << std::endl;
 }
-}
-#endif

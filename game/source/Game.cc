@@ -2,6 +2,7 @@
 #include <engine/Camera.hh>
 #include <engine/Renderer.hh>
 #include <engine/Mesh.hh>
+#include <engine/Mesher.hh>
 #include <engine/Timer.hh>
 #include <engine/Shader.hh>
 #include <engine/Vector2.hh>
@@ -36,7 +37,9 @@ class Game : public Application
             getInput().grabCursor(true);
 
             // test mesh
-	        mesh = new Mesh("natasha2.mesher");
+            MesherModel model("natasha.mesher");
+            if (model.objects.size() == 0) throw "No objects inside mesher model";
+            mesh = new Mesh(model.objects[0]);
             // test texture
             texture = new Texture(256, 256, "natasha_body_d.data");
 

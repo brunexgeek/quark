@@ -18,24 +18,6 @@ std::string inputFileName;
 std::string outputFileName;
 
 
-#define WRITE_U32(out, value) do { uint32_t u32_temp_value = (uint32_t)value; (out).write( (char*) &u32_temp_value, sizeof(uint32_t)); } while(false)
-
-#define WRITE_U8P(out, ptr, size) do { (out).write( (char*) ptr, size); } while(false)
-
-#define WRITE_V3F(out, vec3f) \
-	do { \
-		(out).write( (char*) &(vec3f).x, sizeof(float)); \
-		(out).write( (char*) &(vec3f).y, sizeof(float)); \
-		(out).write( (char*) &(vec3f).z, sizeof(float)); \
-	} while(false)
-
-#define WRITE_V2F(out, vec2f) \
-	do { \
-		(out).write( (char*) &(vec2f).x, sizeof(float)); \
-		(out).write( (char*) &(vec2f).y, sizeof(float)); \
-	} while(false)
-
-
 static void main_printWavefront(
 	std::ostream &out,
 	const WavefrontModel &model )
@@ -155,11 +137,9 @@ static void main_createEntry(
     uint32_t uvIndex,
     uint32_t normalIndex )
 {
-	MesherFace face;
-    face.vertex = source.vertices[vertexIndex];
-    face.uv     = source.uvs[uvIndex];
-    face.normal = source.normals[normalIndex];
-	dest.faces.push_back(face);
+    dest.vertices->push_back(source.vertices[vertexIndex]);
+    dest.normals->push_back(source.normals[normalIndex]);
+	dest.uvs->push_back(source.uvs[uvIndex]);
 }
 
 
@@ -190,22 +170,23 @@ int main( int argc, char **argv )
 			main_createEntry(*(*it), object, face->vertices[0] - 1, face->uvs[0] - 1, face->normals[0] - 1);
 			main_createEntry(*(*it), object, face->vertices[1] - 1, face->uvs[1] - 1, face->normals[1] - 1);
 			main_createEntry(*(*it), object, face->vertices[2] - 1, face->uvs[2] - 1, face->normals[2] - 1);
+
+			uint32_t last = (uint32_t) object.vertices->size() - 1;
+
+			object.faces->push_back(Vector3u(last - 2, last - 1, last));
 		}
 		dest.objects.push_back(object);
 	}
 
 	dest.save(outputFileName);
-/*
-	std::cout << std::endl << "### Output file ###" << std::endl;
-	std::cout << "   Vertices: " << source.faces.size() << std::endl;
-	std::cout << "    Normals: " << source.faces.size() << std::endl;
-	std::cout << "        UVs: " << source.faces.size() << std::endl;
-	std::cout << "      Faces: " << source.faces.size() / 3 << std::endl;
-	std::cout << "  Materials: " << source.materialLibrary.size() << std::endl;
 
-	std::ofstream outputFile(outputFileName.c_str(), std::ios_base::ate | std::ios_base::binary);
-	main_writeBinary(outputFile, source);
-	//uint32_t count = (uint32_t) source.vertices.size();
-	//outputFile.write( (char*) &count, sizeof(uint32_t));
-	outputFile.close();*/
+	std::cout << std::endl << "### Output file ###" << std::endl;
+	for (auto obj = dest.objects.begin(); obj != dest.objects.end(); ++obj)
+	{
+		std::cout << std::endl << "Object '" << obj->name << "':" << std::endl;
+		std::cout << "   Vertices: " << obj->vertices->size() << std::endl;
+		std::cout << "    Normals: " << obj->normals->size() << std::endl;
+		std::cout << "        UVs: " << obj->uvs->size() << std::endl;
+		std::cout << "      Faces: " << obj->faces->size() << std::endl;
+	}
 }

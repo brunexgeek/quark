@@ -64,14 +64,6 @@ Renderer::Renderer(
 	//glEnable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	//projMatrix = glm::perspective(66.0f, ((float)width / (float)height), 0.1f, 100.0f);
-
-	/*const float BIAS_H = 9.0f;
-	const float BIAS_V = BIAS_H * ( (float) height / (float) width );
-	projMatrix = glm::ortho(-BIAS_H, BIAS_H, (-BIAS_V)-2, BIAS_V-2, 0.01f, 100.0f);*/
-	//updateCamera();
-
 	frameTime = 1000 / frameRate;
 }
 
@@ -136,14 +128,9 @@ void Renderer::draw(
 	const Texture *texture,
 	const Transform &transform )
 {
-	uint32_t vertexHandle = mesh.getVertexHandle();
-	uint32_t normalHandler = mesh.getNormalHandle();
-	uint32_t uvHandler = mesh.getUvHandle();
-	uint32_t faceIndexHandle  = mesh.getFaceIndexHandle();
-
 	// attribute buffer 0: vertices
 	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexHandle);
+	glBindBuffer(GL_ARRAY_BUFFER, mesh.getVertexHandle());
 	glVertexAttribPointer(
 		0,                  // attribute index
 		3,                  // size
@@ -155,7 +142,7 @@ void Renderer::draw(
 
 	// attribute buffer 1: normals
 	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, normalHandler);
+	glBindBuffer(GL_ARRAY_BUFFER, mesh.getNormalHandle());
 	glVertexAttribPointer(
 		1,                                // attribute index
 		3,                                // size
@@ -165,11 +152,11 @@ void Renderer::draw(
 		NULL                              // array buffer offset
 	);
 
+	// attribute buffer 2: UV
 	if (texture != nullptr)
 	{
-		// attribute buffer 2: UV
 		glEnableVertexAttribArray(2);
-		glBindBuffer(GL_ARRAY_BUFFER, uvHandler);
+		glBindBuffer(GL_ARRAY_BUFFER, mesh.getUvHandle());
 		glVertexAttribPointer(
 			2,                  // attribute index
 			2,                  // size
@@ -182,19 +169,6 @@ void Renderer::draw(
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture->getHandler());
 	}
-#if 0
-	// attribute buffer 2: normals
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, normalId);
-	glVertexAttribPointer(
-		2,                                // attribute index
-		3,                                // size
-		GL_FLOAT,                         // type
-		GL_FALSE,                         // normalized?
-		0,                                // stride
-		NULL                              // array buffer offset
-	);
-#endif
 
 	glUniform1i(textureId, 0);
 	// creates the model matrix
@@ -205,7 +179,7 @@ void Renderer::draw(
 	glDrawArrays(GL_TRIANGLES, 0, mesh.getVertexCount());
 #else
 	// attribute buffer 1: UV or colors
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faceIndexHandle);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.getFaceHandle());
 	glDrawElements(
 		GL_TRIANGLES,      // mode
 		mesh.getFaceCount() * 3,    // count
