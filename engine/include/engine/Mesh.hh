@@ -5,8 +5,7 @@
 #include <stdint.h>
 #include <iostream>
 #include <engine/Mesher.hh>
-#include <engine/Vector3.hh>
-#include <engine/Vector2.hh>
+#include <engine/Vector.hh>
 #include <vector>
 
 

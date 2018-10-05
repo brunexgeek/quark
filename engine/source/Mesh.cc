@@ -1,7 +1,7 @@
 #include <engine/Mesh.hh>
 #include <engine/Exception.hh>
 #include <GL/glew.h>
-#include <engine/Vector3.hh>
+#include <engine/Vector.hh>
 #include <iostream>
 #include <cstdlib>
 #include <cstring>

@@ -1,4 +1,5 @@
 #include "Wavefront.hh"
+#include <engine/Exception.hh>
 #include <fstream>
 #include <cstring>
 
@@ -111,8 +112,11 @@ static void parseModel(
     }
     else
     // handles faces
-    if (content[0] == "f" && content.size() == 4)
+    if (content[0] == "f")
     {
+        if (content.size() != 4)
+            throw EXCEPTION(1, 0, "This implementation only supports triangles");
+
         Vector3u first  = model.getTriple(content[1]);
         Vector3u second = model.getTriple(content[2]);
         Vector3u third  = model.getTriple(content[3]);

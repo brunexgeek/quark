@@ -2,7 +2,7 @@
 #define ENGINE_CAMERA_HH
 
 
-#include <engine/Vector3.hh>
+#include <engine/Vector.hh>
 #include <engine/Matrix4.hh>
 #include <engine/Transform.hh>
 

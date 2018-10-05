@@ -149,6 +149,7 @@ void MesherModel::load(
 		if (Serializer::readUint32(in) != MESHER_VERTEX_SIGNATURE)
 			throw EXCEPTION(ERR_IO_READ, 0, "Invalid vertex signature");
 		total = Serializer::readUint32(in);
+		std::cerr << "Object Vertices " << total << std::endl;
 		object.vertices->resize(total);
 		Serializer::readBuffer(in, (uint8_t*) object.vertices->data(), total * sizeof(Vector3f));
 
@@ -170,6 +171,7 @@ void MesherModel::load(
 		if (Serializer::readUint32(in) != MESHER_FACE_SIGNATURE)
 			throw EXCEPTION(ERR_IO_READ, 0, "Invalid face signature");
 		total = Serializer::readUint32(in);
+		std::cerr << "Object faces " << total << std::endl;
 		object.faces->resize(total);
 		Serializer::readBuffer(in, (uint8_t*) object.faces->data(), total * sizeof(Vector3u));
 

@@ -8,7 +8,6 @@
 #include <cstring>
 #include <list>
 
-#include <engine/Quaternion.hh>
 #include <engine/Vector.hh>
 #include <engine/Mesher.hh>
 #include "Wavefront.hh"
@@ -152,11 +151,13 @@ int main( int argc, char **argv )
 	WavefrontModel source = WavefrontModel::load(inputFileName.c_str());
 
 	std::cout << std::endl << "### Input file ###" << std::endl;
-	std::cout << "   Vertices: " << source.vertexCount << std::endl;
-	std::cout << "    Normals: " << source.normalCount << std::endl;
-	std::cout << "        UVs: " << source.uvCount << std::endl;
-	std::cout << "      Faces: " << source.faceCount / 3 << std::endl;
-	std::cout << "  Materials: " << source.materialLibrary.size() << std::endl;
+	for (auto it = source.objects.begin(); it != source.objects.end(); ++it)
+	{
+		std::cout << "   Vertices: " << (*it)->vertices.size() << std::endl;
+		std::cout << "    Normals: " << (*it)->normals.size() << std::endl;
+		std::cout << "        UVs: " << (*it)->uvs.size() << std::endl;
+		std::cout << "      Faces: " << (*it)->faces.size() / 3 << std::endl;
+	}
 
 	//main_printWavefront(std::cerr, source);
 

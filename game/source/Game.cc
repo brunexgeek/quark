@@ -5,10 +5,8 @@
 #include <engine/opengl/Texture.hh>
 #include <engine/opengl/Shader.hh>
 #include <engine/Timer.hh>
-#include <engine/Vector2.hh>
-#include <engine/Vector3.hh>
+#include <engine/Vector.hh>
 #include <engine/Matrix4.hh>
-#include <engine/Quaternion.hh>
 #include <engine/Object.hh>
 #include <engine/Application.hh>
 
@@ -26,7 +24,7 @@ static const Vector3f normals[]  = { {1, 1, 1}, {1, 1, 1}, {1, 1, 1} };
 class Game : public quark::Application
 {
     public:
-        static const int NUM_OBJECTS = 3;
+        static const int NUM_OBJECTS = 1;
         Mesh *mesh;
         quark::Light &light;
         quark::Object *object[NUM_OBJECTS];
@@ -40,9 +38,9 @@ class Game : public quark::Application
             getInput().grabCursor(true);
 
             // test mesh
-            quark::MesherModel model("natasha.mesher");
+            quark::MesherModel model("untitled.mesher");
             if (model.objects.size() == 0) throw "No objects inside mesher model";
-            mesh = new quark::opengl::Mesh(model.objects[0]);
+            mesh = new quark::opengl::Mesh(model.objects[1]);
             // test texture
             texture = new quark::opengl::Texture(256, 256, "natasha_body_d.data");
 

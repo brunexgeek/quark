@@ -2,7 +2,8 @@
 #include <algorithm>
 #include <iostream>
 #include <engine/Transform.hh>
-#include <engine/Quaternion.hh>
+#include <engine/Vector.hh>
+
 
 namespace quark {
 
