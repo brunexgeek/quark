@@ -1,10 +1,13 @@
-#ifndef ENGINE_TEXTURE_HH
-#define ENGINE_TEXTURE_HH
+#ifndef QUARK_TEXTURE_HH
+#define QUARK_TEXTURE_HH
 
 
 #include <stdint.h>
 #include <fstream>
 #include <GL/glew.h>
+
+
+namespace quark {
 
 
 class Texture
@@ -13,48 +16,30 @@ class Texture
         Texture(
             int width,
             int height,
-            const uint8_t *data )
+            const uint8_t *data ) : width_(width), height_(height)
         {
-            initialize(width, height, data);
+            (void) data;
         }
 
         Texture(
             int width,
             int height,
-            const std::string &fileName )
+            const std::string &fileName ) : width_(width), height_(height)
         {
-            std::ifstream input(fileName.c_str(), std::ios_base::in | std::ios_base::binary);
-            if (input.good())
-            {
-                input.seekg(0, std::ios_base::end);
-                auto size = input.tellg();
-                input.seekg(0, std::ios_base::beg);
-                uint8_t *data = new(std::nothrow) uint8_t[size];
-                if (data != nullptr)
-                {
-                    input.read( (char*)data, size);
-                    initialize(width, height, data);
-                    delete data;
-                }
-                input.close();
-            }
+            (void) fileName;
         }
 
-        ~Texture()
-        {
-            glDeleteTextures(1, &handler);
-        }
+        virtual ~Texture() = 0;
 
-        uint32_t getHandler() const { return handler; }
+        int getWidth() const   { return width_; }
+        int getHeight() const   { return height_; }
 
-    private:
-        uint32_t handler;
-
-        void initialize(
-            int width,
-            int height,
-            const uint8_t *data );
+    protected:
+        int width_, height_;
 };
 
 
-#endif // ENGINE_TEXTURE_HH
+}
+
+
+#endif // QUARK_TEXTURE_HH

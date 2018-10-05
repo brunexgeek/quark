@@ -132,7 +132,7 @@ static void main_parseOptions( int argc, char **argv )
 
 static void main_createEntry(
 	const WavefrontObject &source,
-	MesherObject &dest,
+	quark::MesherObject &dest,
     uint32_t vertexIndex,
     uint32_t uvIndex,
     uint32_t normalIndex )
@@ -160,10 +160,10 @@ int main( int argc, char **argv )
 
 	//main_printWavefront(std::cerr, source);
 
-	MesherModel dest;
+	quark::MesherModel dest;
 	for (auto it = source.objects.begin(); it != source.objects.end(); ++it)
 	{
-		MesherObject object;
+		quark::MesherObject object;
 		object.name = (*it)->name;
 		for (auto face = (*it)->faces.begin(); face != (*it)->faces.end(); ++face)
 		{

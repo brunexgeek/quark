@@ -3,6 +3,8 @@
 #include <iostream>
 
 
+namespace quark {
+
 Input::Input()
 {
 	memset(keyboard, 0, NUM_KEYS * sizeof(uint8_t));
@@ -54,4 +56,6 @@ void Input::update()
 		if(event.type == QUARK_KEYUP)
 			setKey(event.keyboard.key.scancode, false);
 	}
+}
+
 }

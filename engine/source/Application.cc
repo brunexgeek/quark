@@ -1,6 +1,9 @@
 #include <engine/Application.hh>
 #include <engine/Timer.hh>
 
+
+namespace quark {
+
 Application::Application(
             Renderer &renderer ) :
     state_(ApplicationState::ST_IDLE),
@@ -49,4 +52,6 @@ Renderer &Application::getRenderer()
 Input &Application::getInput()
 {
     return input_;
+}
+
 }

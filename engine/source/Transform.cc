@@ -6,6 +6,8 @@
 #define IS_VALID_SCALE(x)  (!std::isnan(x) && (x) != 1 && (x) > 0 && !std::isinf(x))
 
 
+namespace quark {
+
 Transform::Transform() : changed_(false)
 {
     matrix_ = Matrix4f::identity();
@@ -168,4 +170,6 @@ Transform& Transform::operator=( const Matrix4f &matrix )
 Transform& Transform::operator=( const Transform &obj )
 {
     return *this = obj.getMatrix();
+}
+
 }

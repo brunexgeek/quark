@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 
-#define QUARK_
+namespace quark {
 
 struct KeyInfo
 {
@@ -100,5 +100,7 @@ class SDLChannel : public InputChannel
         void grabCursor(bool value);
 		bool isCursorGrabbed() const;
 };
+
+}
 
 #endif // ENGINE_INPUTCHANNEL_HH

@@ -1,11 +1,12 @@
-#ifndef ENGINE_SHADER__HH
-#define ENGINE_SHADER__HH
-
+#ifndef QUARK_SHADER_HH
+#define QUARK_SHADER_HH
 
 #include <stdint.h>
 #include <iostream>
 #include <string>
 
+
+namespace quark {
 
 enum class ShaderType
 {
@@ -13,7 +14,7 @@ enum class ShaderType
 	SHADER_FRAGMENT
 };
 
-// TODO: create two specializations for colored and textured shaders
+
 class Shader
 {
 	public:
@@ -25,16 +26,12 @@ class Shader
 			ShaderType type,
 			std::istream &in );
 
-		~Shader();
+		virtual ~Shader();
 
-		uint32_t getId() const;
+		ShaderType getType() const;
 
 	protected:
-		uint32_t shaderId;
-
-		void compileShader(
-			ShaderType type,
-			const std::string &code );
+		ShaderType type_;
 };
 
 
@@ -45,13 +42,9 @@ class ShaderProgram
 			const Shader &vertex,
 			const Shader &fragment );
 
-		~ShaderProgram();
-
-		uint32_t getId() const;
-
-	protected:
-		uint32_t programId;
+		virtual ~ShaderProgram();
 };
 
+}
 
-#endif // ENGINE_SHADER__HH
+#endif // QUARK_SHADER_HH

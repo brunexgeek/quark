@@ -1,6 +1,9 @@
 #include <engine/Material.hh>
 
 
+namespace quark {
+
+
 BasicMaterial::BasicMaterial(
 	Shader &shader,
 	const Texture &texture ) : Material(shader)
@@ -45,3 +48,5 @@ BasicMaterial::~BasicMaterial()
 	// nothing to do
 }
 
+
+} // namespace quark

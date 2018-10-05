@@ -6,6 +6,8 @@
 #include <iostream>
 
 
+namespace quark {
+
 class Serializer
 {
     public:
@@ -29,5 +31,6 @@ class Serializer
         Serializer();
 };
 
+}
 
 #endif // ENGINE_SERIALIZER_HH

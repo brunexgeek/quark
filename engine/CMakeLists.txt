@@ -1,4 +1,4 @@
-file(GLOB ENGINE_SOURCE "source/*.cc")
+file(GLOB_RECURSE ENGINE_SOURCE "source/*.cc")
 
 find_package(OpenGL)
 

@@ -32,6 +32,9 @@
 #define MESHER_FACE_SIGNATURE    (uint32_t) 0x45434146
 
 
+namespace quark {
+
+
 MesherModel::MesherModel()
 {
 }
@@ -172,4 +175,6 @@ void MesherModel::load(
 
 		objects.push_back(object);
 	}
+}
+
 }

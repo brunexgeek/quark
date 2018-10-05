@@ -7,6 +7,8 @@
 #include <engine/Transform.hh>
 
 
+namespace quark {
+
 class Camera
 {
 	public:
@@ -69,5 +71,6 @@ class Camera
 		void update();
 };
 
+}
 
 #endif // ENGINE_CAMERA_HH

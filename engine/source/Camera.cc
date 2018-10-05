@@ -4,6 +4,7 @@
 #include <engine/Transform.hh>
 #include <engine/Quaternion.hh>
 
+namespace quark {
 
 Camera::Camera(
 	const Vector3f &position,
@@ -109,4 +110,6 @@ void Camera::tilt( float angle )
 	front_.rotate(angle, axis);//.normalize();
 	up_ = Vector3f::cross(front_, axis).normalize();
 	update();
+}
+
 }

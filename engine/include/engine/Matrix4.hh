@@ -8,6 +8,7 @@
 #include <cstring>
 #include <algorithm>
 
+namespace quark {
 
 template <typename T, int DIM>
 struct Row
@@ -174,6 +175,9 @@ struct Matrix
 typedef Matrix<float, 16> Matrix4f;
 
 
+}
+
+
 #include <iostream>
 #include <iomanip>
 
@@ -181,7 +185,7 @@ typedef Matrix<float, 16> Matrix4f;
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 template <typename T, int DIM>
-static std::ostream &operator << ( std::ostream &out, const Matrix<T,DIM> &value )
+static std::ostream &operator << ( std::ostream &out, const quark::Matrix<T,DIM> &value )
 {
     out << "[ ";
     for (size_t y = 0; y < DIM; ++y)

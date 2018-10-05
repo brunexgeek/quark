@@ -1,11 +1,6 @@
 #include <engine/Timer.hh>
 #include <stdint.h>
 
-// TODO: should be synchronized?
-static uint64_t currentTime = 0;
-static uint32_t currentFPS = 0;
-static uint32_t frameCounter = 0;
-static uint64_t timeCounter = 0;
 
 #define ONE_SECOND    (1000 * 1000)
 
@@ -29,6 +24,14 @@ static std::chrono::system_clock::time_point startTime = std::chrono::high_resol
 #endif
 
 #endif
+
+namespace quark {
+
+// TODO: should be synchronized?
+static uint64_t currentTime = 0;
+static uint32_t currentFPS = 0;
+static uint32_t frameCounter = 0;
+static uint64_t timeCounter = 0;
 
 
 uint64_t Timer::getRealTime()
@@ -77,4 +80,6 @@ void Timer::update()
 uint32_t Timer::getFPS()
 {
     return currentFPS;
+}
+
 }

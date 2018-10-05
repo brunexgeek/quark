@@ -1,6 +1,8 @@
 #include <engine/Serializer.hh>
 
 
+namespace quark {
+
 void Serializer::readBuffer(std::istream &in, uint8_t *buffer, size_t size )
 {
     in.read((char*)buffer, size);
@@ -81,4 +83,6 @@ void Serializer::writeUint32(std::ostream &out, uint32_t value )
 void Serializer::writeUint64(std::ostream &out, uint64_t value )
 {
     out.write((const char*)&value, sizeof(value));
+}
+
 }

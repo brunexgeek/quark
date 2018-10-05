@@ -3,6 +3,8 @@
 #include <iostream>
 
 
+namespace quark {
+
 SDLChannel::SDLChannel()
 {
     SDL_InitSubSystem(SDL_INIT_EVENTS);
@@ -73,4 +75,6 @@ void SDLChannel::grabCursor(bool enabled)
 bool SDLChannel::isCursorGrabbed() const
 {
 	return SDL_GetRelativeMouseMode() != 0;
+}
+
 }

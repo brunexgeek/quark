@@ -2,12 +2,13 @@
 #define ENGINE_TRANSFORM_HH
 
 
-#include <engine/Vector3.hh>
+#include <engine/Vector.hh>
 #include <engine/Matrix4.hh>
 
 
 #define DEGREE_TO_RAD(x) ( (float) ((x) * ( (float)M_PI / 180.0F)) )
 
+namespace quark {
 
 class Transform
 {
@@ -58,6 +59,6 @@ class Transform
 
 };
 
-
+}
 
 #endif // ENGINE_TRANSFORM_HH

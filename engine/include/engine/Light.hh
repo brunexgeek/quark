@@ -2,6 +2,8 @@
 #define ENGINE_LIGHT_HH
 
 
+namespace quark {
+
 class Light
 {
 	public:
@@ -41,5 +43,6 @@ class Light
 		Vector3f position;
 };
 
+}
 
 #endif // ENGINE_LIGHT_HH

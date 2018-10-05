@@ -8,9 +8,10 @@
 #include <engine/Vector.hh>
 #include <engine/Shader.hh>
 
+using quark::Texture;
+using quark::Shader;
 
-template <typename D> class Blabla{ D *ble; };
-
+namespace quark {
 
 template <typename S>
 class Material
@@ -65,5 +66,7 @@ class BasicMaterial : public Material<Shader>
 		Vector2f weights_;
 };
 
+
+} // namespace quark
 
 #endif // ENGINE_MATERIAL_HH

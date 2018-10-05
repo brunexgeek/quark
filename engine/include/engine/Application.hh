@@ -5,6 +5,7 @@
 #include <engine/Renderer.hh>
 #include <engine/Input.hh>
 
+namespace quark {
 
 enum class ApplicationState
 {
@@ -43,6 +44,8 @@ class Application
         Renderer &renderer_;
         Input input_;
 };
+
+}
 
 
 #endif // ENGINE_APPLICATION_HH

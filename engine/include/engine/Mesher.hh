@@ -21,7 +21,7 @@
  */
 #define MESHER_FORMAT_VNU_24     ((uint32_t) 1)
 
-
+/*
 #pragma pack(push, 4)
 
 struct MesherFaceVNU24
@@ -32,7 +32,9 @@ struct MesherFaceVNU24
 };
 
 #pragma pack(pop)
+*/
 
+namespace quark {
 
 struct MesherObject
 {
@@ -93,5 +95,6 @@ struct MesherModel
         std::istream &in );
 };
 
+}
 
 #endif // QUARK_MESHER_HH

@@ -1,52 +1,55 @@
 #include <engine/Application.hh>
 #include <engine/Camera.hh>
-#include <engine/Renderer.hh>
-#include <engine/Mesh.hh>
-#include <engine/Mesher.hh>
+#include <engine/opengl/Renderer.hh>
+#include <engine/opengl/Mesh.hh>
+#include <engine/opengl/Texture.hh>
+#include <engine/opengl/Shader.hh>
 #include <engine/Timer.hh>
-#include <engine/Shader.hh>
 #include <engine/Vector2.hh>
 #include <engine/Vector3.hh>
 #include <engine/Matrix4.hh>
 #include <engine/Quaternion.hh>
 #include <engine/Object.hh>
+#include <engine/Application.hh>
 
 #include "Level.hh"
 #include <fstream>
 
+using quark::Vector3f;
+using quark::Vector2i;
 
 static const Vector3f verts[]    = { {0, 0, 0}, {5, 0, 0}, {0, 5, 0} };
 static const Vector3f colors[]   = { {1, 1, 1}, {1, 0, 1}, {0, 1, 1} };
 static const Vector3f normals[]  = { {1, 1, 1}, {1, 1, 1}, {1, 1, 1} };
 
 
-class Game : public Application
+class Game : public quark::Application
 {
     public:
         static const int NUM_OBJECTS = 3;
         Mesh *mesh;
-        Light &light;
-        Object *object[NUM_OBJECTS];
+        quark::Light &light;
+        quark::Object *object[NUM_OBJECTS];
         Texture *texture;
         float turnDegree = 0;
         Vector3f angles = { 0, 0, 0 };
         uint32_t lastFPS = 0;
 
-        Game( Renderer &renderer, Light &light) : Application(renderer), light(light)
+        Game( quark::Renderer &renderer, quark::Light &light) : Application(renderer), light(light)
         {
             getInput().grabCursor(true);
 
             // test mesh
-            MesherModel model("natasha.mesher");
+            quark::MesherModel model("natasha.mesher");
             if (model.objects.size() == 0) throw "No objects inside mesher model";
-            mesh = new Mesh(model.objects[0]);
+            mesh = new quark::opengl::Mesh(model.objects[0]);
             // test texture
-            texture = new Texture(256, 256, "natasha_body_d.data");
+            texture = new quark::opengl::Texture(256, 256, "natasha_body_d.data");
 
             for (size_t i = 0; i < NUM_OBJECTS; ++i)
             {
                 float scale = 30;
-                object[i] = new Object(*mesh, *texture);
+                object[i] = new quark::Object(*mesh, *texture);
                 object[i]->getTransform().scale({scale, scale, scale});
                 object[i]->getTransform().translate(Vector3f( (float)i * scale, 0.0F, 0.0F));
                 object[i]->getTransform().update();
@@ -60,56 +63,56 @@ class Game : public Application
         }
 
         void input(
-            Input &input )
+            quark::Input &input )
         {
-            if (input.isKeyDown(Input::KEY_ESCAPE))
+            if (input.isKeyDown(quark::Input::KEY_ESCAPE))
             {
                 stop();
                 return;
             }
 
-            if (input.isKeyDown(Input::KEY_S) || input.isKeyDown(Input::KEY_W))
+            if (input.isKeyDown(quark::Input::KEY_S) || input.isKeyDown(quark::Input::KEY_W))
             {
-                Camera &camera = getRenderer().getCamera();
+                quark::Camera &camera = getRenderer().getCamera();
                 Vector3f dir = (camera.frontSide() - camera.getPosition());
                 dir.normalize();
-                if (input.isKeyDown(Input::KEY_S)) dir = -dir;
+                if (input.isKeyDown(quark::Input::KEY_S)) dir = -dir;
                 //std::cout << "Step of " << dir << std::endl;
                 camera.move(dir, .3F);
                 //std::cout << "Player: " << camera.getPosition().x << " x " << camera.getPosition().z << std::endl;
                 light.setPosition(camera.getPosition());
             }
 
-            if (input.isKeyDown(Input::KEY_Q))
+            if (input.isKeyDown(quark::Input::KEY_Q))
             {
-                Camera &camera = getRenderer().getCamera();
+                quark::Camera &camera = getRenderer().getCamera();
                 Vector3f dir = Vector3f(0.0F, .2F, 0.0F);
                 camera.move(dir, .3F);
                 light.setPosition(camera.getPosition());
             }
             else
-            if (input.isKeyDown(Input::KEY_Z))
+            if (input.isKeyDown(quark::Input::KEY_Z))
             {
-                Camera &camera = getRenderer().getCamera();
+                quark::Camera &camera = getRenderer().getCamera();
                 camera.move(camera.leftSide(), .3F);
                 light.setPosition(camera.getPosition());
             }
 
-            if (input.isKeyDown(Input::KEY_D))
+            if (input.isKeyDown(quark::Input::KEY_D))
             {
-                Camera &camera = getRenderer().getCamera();
+                quark::Camera &camera = getRenderer().getCamera();
                 camera.move(camera.leftSide(), .3F);
                 light.setPosition(camera.getPosition());
             }
             else
-            if (input.isKeyDown(Input::KEY_A))
+            if (input.isKeyDown(quark::Input::KEY_A))
             {
-                Camera &camera = getRenderer().getCamera();
+                quark::Camera &camera = getRenderer().getCamera();
                 camera.move(camera.rightSide(), .3F);
                 light.setPosition(camera.getPosition());
             }
 
-            if (input.isKeyDown(Input::KEY_E))
+            if (input.isKeyDown(quark::Input::KEY_E))
             {
                 turnDegree += 1.5F;
                 if (turnDegree > 359) turnDegree = 0;
@@ -120,7 +123,7 @@ class Game : public Application
                 }
             }
             else
-            if (input.isKeyDown(Input::KEY_C))
+            if (input.isKeyDown(quark::Input::KEY_C))
             {
                 turnDegree -= 1.5F;
                 if (turnDegree < 0) turnDegree = 359;
@@ -138,7 +141,7 @@ class Game : public Application
                 Vector3f displace(0);
                 displace.x = (float) delta.x * -AMOUNT;
                 displace.y = (float) delta.y * AMOUNT;
-                Camera &camera = getRenderer().getCamera();
+                quark::Camera &camera = getRenderer().getCamera();
 
                 angles.x += displace.y;
                 if (angles.x < 0) angles.x = 259;
@@ -152,7 +155,7 @@ class Game : public Application
 
         void update()
         {
-            uint32_t currentFPS = Timer::getFPS();
+            uint32_t currentFPS = quark::Timer::getFPS();
             if (currentFPS != lastFPS)
             {
                 lastFPS = currentFPS;
@@ -174,20 +177,20 @@ int main( int argc, char **argv )
     (void) argc;
     (void) argv;
 
-    Camera camera(Vector3f(0, 0, 0), Vector3f(0, 1, 0), Vector3f(0, 0, 1), 50.0F, Camera::AR_16x9);
+    quark::Camera camera(Vector3f(0, 0, 0), Vector3f(0, 1, 0), Vector3f(0, 0, 1), 50.0F, quark::Camera::AR_16x9);
 
-    Light light(Vector3f(0, 0, 10));
-    Renderer renderer(camera, light, 1280, 720);
+    quark::Light light(Vector3f(0, 0, 10));
+    quark::opengl::Renderer renderer(camera, light, 1280, 720);
 
     std::ifstream sf("./shaders/vertex.glsl");
-    Shader vertex(ShaderType::SHADER_VERTEX, sf);
+    quark::opengl::Shader vertex(quark::ShaderType::SHADER_VERTEX, sf);
     sf.close();
 
     sf.open("./shaders/fragments.glsl");
-    Shader frags(ShaderType::SHADER_FRAGMENT, sf);
+    quark::opengl::Shader frags(quark::ShaderType::SHADER_FRAGMENT, sf);
     sf.close();
 
-    ShaderProgram program(vertex, frags);
+    quark::opengl::ShaderProgram program(vertex, frags);
 
     renderer.setActiveShader(program);
     Game instance(renderer, light);

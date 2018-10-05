@@ -15,6 +15,8 @@
 #include <engine/Timer.hh>
 
 
+namespace quark {
+
 Object::Object(
 	const Mesh &mesh ) : lastUpdate(0), mesh(mesh), texture_(nullptr)
 {
@@ -91,4 +93,6 @@ Transform& Object::getTransform()
 const Transform& Object::getTransform() const
 {
 	return transform;
+}
+
 }

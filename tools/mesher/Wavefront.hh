@@ -9,6 +9,11 @@
 #include <engine/Vector.hh>
 
 
+using quark::Vector3f;
+using quark::Vector3u;
+using quark::Vector2f;
+
+
 struct WavefrontMaterial
 {
 	Vector3f colorDiffuse;

@@ -7,10 +7,10 @@
 #include <engine/Transform.hh>
 #include <engine/Texture.hh>
 
+namespace quark {
 
 class Renderer;
 class Material;
-
 
 class Object
 {
@@ -51,5 +51,7 @@ class Object
 		Transform transform;
 		const Texture *texture_;
 };
+
+}
 
 #endif /* ENGINE_OBJECT_HH_ */

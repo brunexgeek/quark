@@ -5,6 +5,9 @@
 #include <stdint.h>
 
 
+namespace quark {
+
+
 #if defined(__WIN32__) || defined(__WIN64__) || defined(__WINNT__) || defined(__WINCE__) \
         || defined(__WIN16__) || defined(__CYGWIN__) || defined(WIN32) || defined(_WIN32) \
         || defined(_WIN64) || defined(WIN64)
@@ -50,5 +53,6 @@ class Timer
         static uint32_t getFPS();
 };
 
+}
 
 #endif // ENGINE_TIMER_HH

@@ -2,10 +2,12 @@
 #define ENGINE_INPUT_HH
 
 
-#include <engine/Vector2.hh>
+#include <engine/Vector.hh>
 #include <engine/InputChannel.hh>
 #include <stdint.h>
 
+
+namespace quark {
 
 class Input
 {
@@ -411,5 +413,6 @@ class Input
 		InputChannel *channel;
 };
 
+}
 
 #endif // ENGINE_INPUT_HH
