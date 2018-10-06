@@ -18,31 +18,25 @@ enum class ShaderType
 class Shader
 {
 	public:
-		Shader(
-			ShaderType type,
-			const std::string &code );
-
-		Shader(
-			ShaderType type,
-			std::istream &in );
-
 		virtual ~Shader();
 
 		ShaderType getType() const;
 
 	protected:
 		ShaderType type_;
+
+		Shader(
+			ShaderType type );
 };
 
 
 class ShaderProgram
 {
 	public:
-		ShaderProgram(
-			const Shader &vertex,
-			const Shader &fragment );
-
 		virtual ~ShaderProgram();
+
+	protected:
+		ShaderProgram();
 };
 
 }

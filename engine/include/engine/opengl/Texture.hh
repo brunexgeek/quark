@@ -19,15 +19,17 @@ class Texture : public quark::Texture
         Texture(
             int width,
             int height,
-            const uint8_t *data ) : quark::Texture(width, height, data)
+            const uint8_t *data,
+            bool isGrayScale = false ) : quark::Texture(width, height, data)
         {
-            initialize(width, height, data);
+            initialize(width, height, data, isGrayScale);
         }
 
         Texture(
             int width,
             int height,
-            const std::string &fileName ) : quark::Texture(width, height, fileName)
+            const std::string &fileName,
+            bool isGrayScale = false ) : quark::Texture(width, height, fileName)
         {
             std::ifstream input(fileName.c_str(), std::ios_base::in | std::ios_base::binary);
             if (input.good())
@@ -39,7 +41,7 @@ class Texture : public quark::Texture
                 if (data != nullptr)
                 {
                     input.read( (char*)data, size);
-                    initialize(width, height, data);
+                    initialize(width, height, data, isGrayScale);
                     delete data;
                 }
                 input.close();
@@ -59,7 +61,8 @@ class Texture : public quark::Texture
         void initialize(
             int width,
             int height,
-            const uint8_t *data );
+            const uint8_t *data,
+            bool isGrayScale = false );
 };
 
 

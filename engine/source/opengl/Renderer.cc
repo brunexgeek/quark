@@ -1,10 +1,3 @@
-/*
- * Renderer.cc
- *
- *  Created on: Jan 30, 2016
- *      Author: bruno
- */
-
 #include <iostream>
 #include <fstream>
 #include <SDL2/SDL.h>
@@ -23,6 +16,17 @@
 
 #define SEND_TRANSPOSED GL_TRUE
 
+#define COLOR_VERTEX_SHADER \
+	"#version 330 core\n" \
+	"layout(location = 0) in vec3 VertexPositionWS;\n" \
+	"void main(){gl_Position = vec4(VertexPositionWS, 1);}"
+
+#define COLOR_FRAGMENT_SHADER \
+	"#version 330 core\n" \
+	"out vec3 color;\n" \
+	"void main(){color = vec3(1,1,1);}"
+
+
 using std::string;
 using std::ostream;
 
@@ -36,7 +40,7 @@ Renderer::Renderer(
 	uint32_t width,
 	uint32_t height,
 	uint32_t frameRate ) : quark::Renderer(camera, light, width, height, frameRate),
-		window(NULL)
+		window(nullptr), gridProgram(nullptr)
 {
 	// creates the SDL window
 	window = SDL_CreateWindow("Renderer", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -67,6 +71,9 @@ Renderer::Renderer(
 	//glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
+
+	// resources used by grid rendering
+	prepareGrid();
 }
 
 
@@ -198,7 +205,10 @@ void Renderer::drawLine(
 	float g,
 	float b )
 {
+	setActiveShader(*gridProgram);
+
 	GLuint vHandle, cHandle, nHandle;
+
 
 	float vertices[] =
 	{
@@ -267,6 +277,81 @@ void Renderer::drawLine(
 	glDeleteBuffers(1, &cHandle);
 	glDeleteBuffers(1, &nHandle);
 }*/
+
+
+void Renderer::prepareGrid()
+{
+	// resources used by grind rendering
+	//gridProgram = new ShaderProgram(COLOR_VERTEX_SHADER, COLOR_FRAGMENT_SHADER);
+	/*static const size_t textureSide = 128;
+	uint8_t *pixels = new uint8_t[textureSide * textureSide]();
+	for (int j = 0; j < textureSide; ++j)
+    	for (int i = 0; i < textureSide; ++i)
+        	pixels[j*textureSide + i] = (i < textureSide / 16 || j < textureSide / 16) ? 255 : 0;
+	gridTexture = new Texture(128, 128, pixels);
+	delete[] pixels;*/
+
+	// grid lines
+	static const size_t LINES = 11;
+	gridPoints = LINES * 4;
+	Vector3f *gridLines = new Vector3f[gridPoints];
+	for (size_t i = 0; i < LINES * 2; i += 2)
+	{
+		gridLines[i]     = Vector3f(i - 10.0F, 0, -10);
+		gridLines[i + 1] = Vector3f(i - 10.0F, 0,  10);
+	}
+	for (size_t i = LINES * 2; i < LINES * 4; i += 2)
+	{
+		gridLines[i]     = Vector3f(-10.0F, 0, i - LINES * 2.0F - 10.0F);
+		gridLines[i + 1] = Vector3f( 10.0F, 0, i - LINES * 2.0F - 10.0F);
+	}
+	// upload grid lines to GPU
+	glGenBuffers(1, &gridHandle);
+	glBindBuffer(GL_ARRAY_BUFFER, gridHandle);
+	glBufferData(GL_ARRAY_BUFFER, gridPoints * sizeof(Vector3f), gridLines, GL_STATIC_DRAW);
+	delete[] gridLines;
+}
+
+
+void Renderer::drawGrid()
+{
+	//setActiveShader(*gridProgram);
+
+	// attribute buffer 0: vertices
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, gridHandle);
+	glVertexAttribPointer(
+		0,                  // attribute index
+		3,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		NULL                // array buffer offset
+	);
+
+	// attribute buffer 1: UVs
+	/*glEnableVertexAttribArray(1);
+	glGenBuffers(1, &uvHandle);
+	glBindBuffer(GL_ARRAY_BUFFER, uvHandle);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(
+		1,                  // attribute index
+		2,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		NULL                // array buffer offset
+	);
+	// activates the mesh texture
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gridTexture->getHandler());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);*/
+
+	// Draw the triangle !
+	glDrawArrays(GL_LINES, 0, gridPoints);
+	glDisableVertexAttribArray(0);
+}
 
 
 void Renderer::setActiveShader(

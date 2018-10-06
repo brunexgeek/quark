@@ -44,12 +44,20 @@ class ShaderProgram : public quark::ShaderProgram
 			const Shader &vertex,
 			const Shader &fragment );
 
+		ShaderProgram(
+			const std::string &vertexCode,
+			const std::string &fragmentCode );
+
 		~ShaderProgram();
 
 		uint32_t getId() const;
 
 	protected:
 		uint32_t programId;
+
+		void initialize(
+			const Shader &vertex,
+			const Shader &fragment );
 };
 
 

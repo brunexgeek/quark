@@ -21,6 +21,9 @@ static const Vector3f colors[]   = { {1, 1, 1}, {1, 0, 1}, {0, 1, 1} };
 static const Vector3f normals[]  = { {1, 1, 1}, {1, 1, 1}, {1, 1, 1} };
 
 
+static quark::opengl::ShaderProgram *program = nullptr;
+
+
 class Game : public quark::Application
 {
     public:
@@ -38,9 +41,9 @@ class Game : public quark::Application
             getInput().grabCursor(true);
 
             // test mesh
-            quark::MesherModel model("untitled.mesher");
+            quark::MesherModel model("natasha.mesher");
             if (model.objects.size() == 0) throw "No objects inside mesher model";
-            mesh = new quark::opengl::Mesh(model.objects[1]);
+            mesh = new quark::opengl::Mesh(model.objects[0]);
             // test texture
             texture = new quark::opengl::Texture(256, 256, "natasha_body_d.data");
 
@@ -163,8 +166,11 @@ class Game : public quark::Application
 
         void draw()
         {
+            ((quark::opengl::Renderer&)getRenderer()).drawGrid();
+            getRenderer().setActiveShader(*program);
             for (size_t i = 0; i < NUM_OBJECTS; ++i)
                 object[i]->draw(getRenderer());
+
         }
 
 };
@@ -188,9 +194,9 @@ int main( int argc, char **argv )
     quark::opengl::Shader frags(quark::ShaderType::SHADER_FRAGMENT, sf);
     sf.close();
 
-    quark::opengl::ShaderProgram program(vertex, frags);
+    program = new quark::opengl::ShaderProgram(vertex, frags);
 
-    renderer.setActiveShader(program);
+    renderer.setActiveShader(*program);
     Game instance(renderer, light);
     instance.run();
     return 0;

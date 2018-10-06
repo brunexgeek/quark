@@ -78,6 +78,8 @@ class Renderer
 
 		Camera &getCamera();
 
+		virtual void drawGrid() = 0;
+
 	protected:
 		uint32_t width;
 		uint32_t height;

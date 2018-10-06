@@ -1,0 +1,6 @@
++ Fix camera free look
++ Fix rendering of some particular meshes (IDK the reason by now)
++ Implement framebufer
++ Implement multi-pass rendering (one pass per light)
++ Create matrix for orthogonal view
++ Check why changing the currents hader is not working

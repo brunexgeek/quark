@@ -75,11 +75,19 @@ class Renderer : public quark::Renderer
 
 		Camera &getCamera();
 
+		void drawGrid();
+
 	private:
 		SDL_Window *window;
 		void *context;
 		uint32_t vertexArrayID;
 		uint32_t lastDraw;
+
+		ShaderProgram *gridProgram;
+		//Texture *gridTexture;
+		//std::vector<Vector3f> gridLines;
+		uint32_t gridHandle;
+		uint32_t gridPoints;
 
 		// shader uniforms
 		int32_t textureId;
@@ -92,6 +100,8 @@ class Renderer : public quark::Renderer
 			const quark::Mesh &mesh,
 			const quark::Texture *texture,
 			const Transform &transform );
+
+		void prepareGrid();
 
 		//void updateCamera();
 };

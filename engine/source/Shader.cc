@@ -12,18 +12,8 @@ namespace quark {
 
 
 Shader::Shader(
-	ShaderType type,
-	const string &code ) : type_(type)
+	ShaderType type ) : type_(type)
 {
-	(void)code;
-}
-
-
-Shader::Shader(
-	ShaderType type,
-	std::istream &in ) : type_(type)
-{
-	(void)in;
 }
 
 
@@ -38,12 +28,8 @@ ShaderType Shader::getType() const
 }
 
 
-ShaderProgram::ShaderProgram(
-	const Shader &vertex,
-	const Shader &fragment )
+ShaderProgram::ShaderProgram()
 {
-	(void)vertex;
-	(void)fragment;
 }
 
 
