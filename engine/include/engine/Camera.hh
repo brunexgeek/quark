@@ -42,9 +42,13 @@ class Camera
 
 		const Vector3f &frontSide() const { return front_; };
 
+		Vector3f &frontSide() { return front_; };
+
 		void tilt( float angle );
 
 		void pan( float angle );
+
+		void update();
 
 	protected:
 		Vector3f position_;
@@ -68,7 +72,7 @@ class Camera
 			const Vector3f &target,
 			const Vector3f &up );
 
-		void update();
+
 };
 
 }

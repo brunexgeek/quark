@@ -33,7 +33,7 @@ class Game : public quark::Application
         quark::Object *object[NUM_OBJECTS];
         Texture *texture;
         float turnDegree = 0;
-        Vector3f angles = { 0, 0, 0 };
+        //Vector3f angles = { 0, 0, 0 };
         uint32_t lastFPS = 0;
 
         Game( quark::Renderer &renderer, quark::Light &light) : Application(renderer), light(light)
@@ -75,19 +75,18 @@ class Game : public quark::Application
             if (input.isKeyDown(quark::Input::KEY_S) || input.isKeyDown(quark::Input::KEY_W))
             {
                 quark::Camera &camera = getRenderer().getCamera();
-                Vector3f dir = (camera.frontSide() - camera.getPosition());
-                dir.normalize();
+                Vector3f dir = camera.frontSide();
                 if (input.isKeyDown(quark::Input::KEY_S)) dir = -dir;
-                //std::cout << "Step of " << dir << std::endl;
+                std::cout << "Step of " << dir << std::endl;
                 camera.move(dir, .3F);
-                //std::cout << "Player: " << camera.getPosition().x << " x " << camera.getPosition().z << std::endl;
+                std::cout << "Player: " << camera.getPosition().x << " x " << camera.getPosition().z << std::endl;
                 light.setPosition(camera.getPosition());
             }
 
             if (input.isKeyDown(quark::Input::KEY_Q))
             {
                 quark::Camera &camera = getRenderer().getCamera();
-                Vector3f dir = Vector3f(0.0F, .2F, 0.0F);
+                Vector3f dir = Vector3f(0.0F, .3F, 0.0F);
                 camera.move(dir, .3F);
                 light.setPosition(camera.getPosition());
             }
@@ -95,7 +94,8 @@ class Game : public quark::Application
             if (input.isKeyDown(quark::Input::KEY_Z))
             {
                 quark::Camera &camera = getRenderer().getCamera();
-                camera.move(camera.leftSide(), .3F);
+                Vector3f dir = Vector3f(0.0F, -.3F, 0.0F);
+                camera.move(dir, .3F);
                 light.setPosition(camera.getPosition());
             }
 
@@ -135,22 +135,30 @@ class Game : public quark::Application
                 }
             }
 
+            if (input.isKeyDown(quark::Input::KEY_R))
+            {
+                quark::Camera &camera = getRenderer().getCamera();
+                camera.frontSide() = Vector3f(1, 0, 1);
+                camera.update();
+            }
+
             if (input.isMouseMoved())
             {
-                static const float AMOUNT = 0.2F;
+                static const float AMOUNT = 0.3F;
                 Vector2i delta = input.getMouseDelta();
                 Vector3f displace(0);
-                displace.x = (float) delta.x * -AMOUNT;
-                displace.y = (float) delta.y * AMOUNT;
+                if (!input.isKeyDown(quark::Input::KEY_X)) displace.x = (float) delta.x * -AMOUNT;
+                if (!input.isKeyDown(quark::Input::KEY_Y)) displace.y = (float) delta.y * AMOUNT;
                 quark::Camera &camera = getRenderer().getCamera();
 
-                angles.x += displace.y;
+                /*angles.x += displace.y;
                 if (angles.x < 0) angles.x = 259;
-                if (angles.x >= 260) angles.x = 0;
+                if (angles.x >= 260) angles.x = 0;*/
                 //std::cout << "From " << camera.frontSide() << std::endl;
                 camera.pan(displace.x);
                 camera.tilt(displace.y);
-                //std::cout << "  To " << camera.frontSide() << std::endl;
+                //std::cout << "Front " << camera.frontSide() << std::endl << std::endl;
+                //std::cout << "Left " << camera.leftSide() << std::endl << std::endl;
             }
         }
 
@@ -167,7 +175,7 @@ class Game : public quark::Application
         void draw()
         {
             ((quark::opengl::Renderer&)getRenderer()).drawGrid();
-            getRenderer().setActiveShader(*program);
+            //getRenderer().setActiveShader(*program);
             for (size_t i = 0; i < NUM_OBJECTS; ++i)
                 object[i]->draw(getRenderer());
 

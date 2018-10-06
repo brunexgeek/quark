@@ -392,7 +392,7 @@ class Input
 		const Vector2i& getMouseDelta() const         { return mouseDelta; }
 		bool isMouseMoved() const                     { return mouseDelta.x != 0 || mouseDelta.y != 0; }
 
-		void setKey(int keyCode, bool value)          { keyboard[keyCode] = (uint8_t) value; }
+		void setKey(int keyCode, bool value)          { keyboard[keyCode] = (uint8_t) value; /*std::cout << "Key: " << keyCode << std::endl;*/ }
 		void setMouseButton(int button, bool value)   { mouseButton[button] = (uint8_t) value; }
 		void setMouseX(int value, int rel = 0)        { mousePosition.x = value; mouseDelta.x = rel; }
 		void setMouseY(int value, int rel = 0)        { mousePosition.x = value; mouseDelta.y = rel; }

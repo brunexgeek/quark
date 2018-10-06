@@ -218,6 +218,10 @@ struct Vector3
         return std::sqrt(x * x + y * y + z * z);
     }
 
+    Vector3<T>& setX( const T value ) { x = value; return *this; }
+    Vector3<T>& setY( const T value ) { y = value; return *this; }
+    Vector3<T>& setZ( const T value ) { z = value; return *this; }
+
     Vector3<T>& rotate( T angle, Vector3<T> axis );
 
 };
@@ -332,9 +336,9 @@ Vector3<T>& Vector3<T>::rotate( T angle, Vector3<T> axis )
 
 static std::ostream &operator << ( std::ostream &out, const quark::Vector3f &value )
 {
-	out << value.x << ' '
-        << value.y << ' '
-        << value.z;
+	out << std::setw(11) << value.x << ' '
+        << std::setw(11) << value.y << ' '
+        << std::setw(11) << value.z;
     return out;
 }
 

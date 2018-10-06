@@ -10,9 +10,9 @@ namespace quark {
 Camera::Camera(
 	const Vector3f &position,
 	const Vector3f &up,
-	const Vector3f &target,
+	const Vector3f &front,
 	float fov,
-	float aspect ) : position_(position), up_(up), front_(target * 1000.0F), angles_(0),
+	float aspect ) : position_(position), up_(up), front_(front), angles_(0),
 		fov_(fov), aspect_(aspect)
 {
 	initProjection(fov, aspect, 0.01F, 1000.0F);
@@ -45,9 +45,10 @@ void Camera::initProjection(
 
 Matrix4f Camera::lookAt(
 	const Vector3f &position,
-	const Vector3f &target,
+	const Vector3f &direction,
 	const Vector3f &up )
 {
+	Vector3f target = position + direction;
 	Vector3f f(Vector3f::normalize(target - position));
 	Vector3f s(Vector3f::normalize(Vector3f::cross(f, up)));
 	Vector3f u(Vector3f::cross(s, f));
@@ -100,7 +101,8 @@ Vector3f Camera::rightSide() const
 void Camera::pan( float angle )
 {
 	Vector3f axis = Vector3f::cross(up_, front_).normalize();
-	front_.rotate(angle, up_);//.normalize();
+	axis.y = 0; // do not change Y axis
+	front_.rotate(angle, up_).normalize();
 	up_ = Vector3f::cross(front_, axis).normalize();
 	update();
 }
@@ -108,7 +110,10 @@ void Camera::pan( float angle )
 void Camera::tilt( float angle )
 {
 	Vector3f axis = Vector3f::cross(up_, front_).normalize();
-	front_.rotate(angle, axis);//.normalize();
+	Vector3f nfront = front_;
+	nfront.rotate(angle, axis).normalize();
+	if (nfront.y > 0.98F || nfront.y < -0.98F) return; // limit to ~180 degrees
+	front_ = nfront;
 	up_ = Vector3f::cross(front_, axis).normalize();
 	update();
 }
