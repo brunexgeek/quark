@@ -292,19 +292,39 @@ void Renderer::prepareGrid()
 	delete[] pixels;*/
 
 	// grid lines
-	static const size_t LINES = 11;
-	gridPoints = LINES * 4;
+	static const size_t LINES = 11; // keep this odd
+	static const float SQUARE_SIZE = 1.0F;
+	gridPoints = LINES * 2 * 2; // 2 points per line, 2 axis
 	Vector3f *gridLines = new Vector3f[gridPoints];
-	for (size_t i = 0; i < LINES * 2; i += 2)
+
+	size_t p = 0;
+	float x = float(LINES / 2) * -SQUARE_SIZE;
+	// X axis
+	while (p < gridPoints / 2)
 	{
-		gridLines[i]     = Vector3f(i - 10.0F, 0, -10);
-		gridLines[i + 1] = Vector3f(i - 10.0F, 0,  10);
+		gridLines[p++] = Vector3f(x, 0, -(LINES / 2 * SQUARE_SIZE));
+		gridLines[p++] = Vector3f(x, 0,  (LINES / 2 * SQUARE_SIZE));
+		x += SQUARE_SIZE;
+	}
+	// Z axis
+	float z = float(LINES / 2) * -SQUARE_SIZE;
+	while (p < gridPoints)
+	{
+		gridLines[p++] = Vector3f(-(LINES / 2 * SQUARE_SIZE), 0, z);
+		gridLines[p++] = Vector3f( (LINES / 2 * SQUARE_SIZE), 0, z);
+		z += SQUARE_SIZE;
+	}
+	gridPoints = (uint32_t) p;
+/*	for (size_t i = 0; i < LINES * 2; i += 2)
+	{
+		gridLines[i]     = Vector3f(i - SQUARE_SIZE, 0, -SQUARE_SIZE);
+		gridLines[i + 1] = Vector3f(i - SQUARE_SIZE, 0,  SQUARE_SIZE);
 	}
 	for (size_t i = LINES * 2; i < LINES * 4; i += 2)
 	{
-		gridLines[i]     = Vector3f(-10.0F, 0, i - LINES * 2.0F - 10.0F);
-		gridLines[i + 1] = Vector3f( 10.0F, 0, i - LINES * 2.0F - 10.0F);
-	}
+		gridLines[i]     = Vector3f(-SQUARE_SIZE, 0, i - LINES * 2.0F - SQUARE_SIZE);
+		gridLines[i + 1] = Vector3f( SQUARE_SIZE, 0, i - LINES * 2.0F - SQUARE_SIZE);
+	}*/
 	// upload grid lines to GPU
 	glGenBuffers(1, &gridHandle);
 	glBindBuffer(GL_ARRAY_BUFFER, gridHandle);

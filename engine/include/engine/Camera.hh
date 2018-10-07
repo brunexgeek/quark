@@ -18,7 +18,7 @@ class Camera
 		Camera(
 			const Vector3f &position,
 			const Vector3f &up,
-			const Vector3f &target,
+			const Vector3f &direction,
 			float fov = 66.0F,
 			float aspect = AR_4x3 );
 

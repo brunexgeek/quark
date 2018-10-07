@@ -14,6 +14,27 @@ class Input
 	public:
 		enum
 		{
+			MOD_NONE   = 0x0000,
+			MOD_LSHIFT = 0x0002,
+			MOD_RSHIFT = 0x0004,
+			MOD_LCTRL  = 0x0008,
+			MOD_RCTRL  = 0x0010,
+			MOD_LALT   = 0x0020,
+			MOD_RALT   = 0x0040,
+			MOD_LGUI   = 0x0080,
+			MOD_RGUI   = 0x0100,
+			MOD_NUM    = 0x0200,
+			MOD_CAPS   = 0x0400,
+			MOD_MODE   = 0x0800,
+		};
+
+		#define KMOD_CTRL   (KMOD_LCTRL|KMOD_RCTRL)
+		#define KMOD_SHIFT  (KMOD_LSHIFT|KMOD_RSHIFT)
+		#define KMOD_ALT    (KMOD_LALT|KMOD_RALT)
+		#define KMOD_GUI    (KMOD_LGUI|KMOD_RGUI)
+
+		enum
+		{
 			MOUSE_LEFT_BUTTON = 1,
 			MOUSE_MIDDLE_BUTTON = 2,
 			MOUSE_RIGHT_BUTTON = 3,
@@ -26,7 +47,7 @@ class Input
 		 */
 		enum
 		{
-				KEY_UNKNOWN = 0,
+			KEY_UNKNOWN = 0,
 
 			/**
 			 *  \name Usage page 0x07
@@ -222,10 +243,6 @@ class Input
 			KEY_MUTE = 127,
 			KEY_VOLUMEUP = 128,
 			KEY_VOLUMEDOWN = 129,
-		/* not sure whether there's a reason to enable these */
-		/*     KEY_LOCKINGCAPSLOCK = 130,  */
-		/*     KEY_LOCKINGNUMLOCK = 131, */
-		/*     KEY_LOCKINGSCROLLLOCK = 132, */
 			KEY_KP_COMMA = 133,
 			KEY_KP_EQUALSAS400 = 134,
 
@@ -374,8 +391,8 @@ class Input
 		};
 
 
-		static const int NUM_KEYS = 512;
-		static const int NUM_MOUSEBUTTONS = 256;
+		static const int NUM_KEYS = 285;
+		static const int NUM_MOUSEBUTTONS = 8;
 
 		Input();
 
@@ -384,16 +401,17 @@ class Input
 
 		~Input();
 
-		bool isKeyDown(int keyCode) const             { return keyboard[keyCode] != 0; }
-		bool isKeyUp(int keyCode) const               { return keyboard[keyCode] == 0; }
-		bool isMouseDown(int keyCode) const           { return mouseButton[keyCode] != 0; }
-		bool isMouseUp(int keyCode) const             { return mouseButton[keyCode] == 0; }
+		bool isKeyDown(uint16_t code) const           { return (code >= NUM_KEYS) ? false : keyboard[code] != 0; }
+		bool isKeyUp(uint16_t code) const             { return (code >= NUM_KEYS) ? false : keyboard[code] == 0; }
+		bool isMouseDown(uint16_t code) const         { return (code >= NUM_MOUSEBUTTONS) ? false : mouseButton[code] != 0; }
+		bool isMouseUp(uint16_t code) const           { return (code >= NUM_MOUSEBUTTONS) ? false : mouseButton[code] == 0; }
 		const Vector2i& getMousePosition() const      { return mousePosition; }
 		const Vector2i& getMouseDelta() const         { return mouseDelta; }
 		bool isMouseMoved() const                     { return mouseDelta.x != 0 || mouseDelta.y != 0; }
+		uint16_t getModifiers() const;
 
-		void setKey(int keyCode, bool value)          { keyboard[keyCode] = (uint8_t) value; /*std::cout << "Key: " << keyCode << std::endl;*/ }
-		void setMouseButton(int button, bool value)   { mouseButton[button] = (uint8_t) value; }
+		void setKey(uint16_t code, bool state)        { if (code < NUM_KEYS) keyboard[code] = (uint16_t) state; }
+		void setMouseButton(uint16_t code, bool value){ if (code < NUM_MOUSEBUTTONS) mouseButton[code] = (uint8_t) value; }
 		void setMouseX(int value, int rel = 0)        { mousePosition.x = value; mouseDelta.x = rel; }
 		void setMouseY(int value, int rel = 0)        { mousePosition.x = value; mouseDelta.y = rel; }
 		void setMousePosition(const Vector2i &pos )   { setMouseX(pos.x); setMouseY(pos.y); }

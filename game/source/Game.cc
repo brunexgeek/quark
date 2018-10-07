@@ -33,7 +33,6 @@ class Game : public quark::Application
         quark::Object *object[NUM_OBJECTS];
         Texture *texture;
         float turnDegree = 0;
-        //Vector3f angles = { 0, 0, 0 };
         uint32_t lastFPS = 0;
 
         Game( quark::Renderer &renderer, quark::Light &light) : Application(renderer), light(light)
@@ -49,7 +48,7 @@ class Game : public quark::Application
 
             for (size_t i = 0; i < NUM_OBJECTS; ++i)
             {
-                float scale = 30;
+                float scale = 10;
                 object[i] = new quark::Object(*mesh, *texture);
                 object[i]->getTransform().scale({scale, scale, scale});
                 object[i]->getTransform().translate(Vector3f( (float)i * scale, 0.0F, 0.0F));
@@ -66,6 +65,9 @@ class Game : public quark::Application
         void input(
             quark::Input &input )
         {
+            float speed = 0.4F;
+            if (input.getModifiers() & quark::Input::MOD_LSHIFT) speed *= 3.0F;
+
             if (input.isKeyDown(quark::Input::KEY_ESCAPE))
             {
                 stop();
@@ -76,10 +78,11 @@ class Game : public quark::Application
             {
                 quark::Camera &camera = getRenderer().getCamera();
                 Vector3f dir = camera.frontSide();
-                if (input.isKeyDown(quark::Input::KEY_S)) dir = -dir;
-                std::cout << "Step of " << dir << std::endl;
-                camera.move(dir, .3F);
-                std::cout << "Player: " << camera.getPosition().x << " x " << camera.getPosition().z << std::endl;
+                if (input.isKeyDown(quark::Input::KEY_S))
+                    dir = -dir;
+                //std::cout << "Step of " << dir << std::endl;
+                camera.move(dir, speed);
+                //std::cout << "Player: " << camera.getPosition().x << " x " << camera.getPosition().z << "\r" << std::flush;
                 light.setPosition(camera.getPosition());
             }
 
@@ -87,7 +90,7 @@ class Game : public quark::Application
             {
                 quark::Camera &camera = getRenderer().getCamera();
                 Vector3f dir = Vector3f(0.0F, .3F, 0.0F);
-                camera.move(dir, .3F);
+                camera.move(dir, speed);
                 light.setPosition(camera.getPosition());
             }
             else
@@ -95,21 +98,21 @@ class Game : public quark::Application
             {
                 quark::Camera &camera = getRenderer().getCamera();
                 Vector3f dir = Vector3f(0.0F, -.3F, 0.0F);
-                camera.move(dir, .3F);
+                camera.move(dir, speed);
                 light.setPosition(camera.getPosition());
             }
 
             if (input.isKeyDown(quark::Input::KEY_D))
             {
                 quark::Camera &camera = getRenderer().getCamera();
-                camera.move(camera.leftSide(), .3F);
+                camera.move(camera.leftSide(), speed);
                 light.setPosition(camera.getPosition());
             }
             else
             if (input.isKeyDown(quark::Input::KEY_A))
             {
                 quark::Camera &camera = getRenderer().getCamera();
-                camera.move(camera.rightSide(), .3F);
+                camera.move(camera.rightSide(), speed);
                 light.setPosition(camera.getPosition());
             }
 
@@ -138,7 +141,7 @@ class Game : public quark::Application
             if (input.isKeyDown(quark::Input::KEY_R))
             {
                 quark::Camera &camera = getRenderer().getCamera();
-                camera.frontSide() = Vector3f(1, 0, 1);
+                camera.frontSide() = Vector3f(1, 0, 0);
                 camera.update();
             }
 
@@ -178,7 +181,6 @@ class Game : public quark::Application
             //getRenderer().setActiveShader(*program);
             for (size_t i = 0; i < NUM_OBJECTS; ++i)
                 object[i]->draw(getRenderer());
-
         }
 
 };
@@ -189,9 +191,9 @@ int main( int argc, char **argv )
     (void) argc;
     (void) argv;
 
-    quark::Camera camera(Vector3f(0, 0, 0), Vector3f(0, 1, 0), Vector3f(0, 0, 1), 50.0F, quark::Camera::AR_16x9);
+    quark::Camera camera(Vector3f(0, 15, -30), Vector3f(0, 1, 0), Vector3f(0, 0, 1), 50.0F, quark::Camera::AR_16x9);
 
-    quark::Light light(Vector3f(0, 0, 10));
+    quark::Light light(camera.getPosition());
     quark::opengl::Renderer renderer(camera, light, 1280, 720);
 
     std::ifstream sf("./shaders/vertex.glsl");

@@ -112,7 +112,7 @@ void Camera::tilt( float angle )
 	Vector3f axis = Vector3f::cross(up_, front_).normalize();
 	Vector3f nfront = front_;
 	nfront.rotate(angle, axis).normalize();
-	if (nfront.y > 0.98F || nfront.y < -0.98F) return; // limit to ~180 degrees
+	if (nfront.y > 0.96F || nfront.y < -0.96F) return; // limit to ~180 degrees
 	front_ = nfront;
 	up_ = Vector3f::cross(front_, axis).normalize();
 	update();

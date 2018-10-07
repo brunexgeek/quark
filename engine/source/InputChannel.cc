@@ -1,4 +1,5 @@
 #include <engine/InputChannel.hh>
+#include <engine/Input.hh>
 #include <SDL2/SDL.h>
 #include <iostream>
 
@@ -57,7 +58,7 @@ bool SDLChannel::poolEvent(
                 event.keyboard.type = QUARK_KEYUP;
             event.keyboard.repeat = ee.key.repeat != 0;
             event.keyboard.key.scancode = ee.key.keysym.scancode;
-            event.keyboard.key.modifier = ee.key.keysym.mod;
+            event.keyboard.key.modifier = 0;
         }
         return true;
 	}

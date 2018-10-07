@@ -15,9 +15,9 @@ struct KeyInfo
 
 struct KeyboardEvent
 {
-    uint32_t type;        /// QUARK_KEYDOWN or QUARK_KEYUP
+    uint32_t type;       /// QUARK_KEYDOWN or QUARK_KEYUP
     KeyInfo key;         /// The key that was pressed or released
-    bool repeat;          /// Non-zero if this is a key repeat
+    bool repeat;         /// Non-zero if this is a key repeat
 };
 
 struct MouseMotionEvent
